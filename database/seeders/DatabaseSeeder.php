@@ -31,9 +31,20 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Buat 10 user
+        User::create([
+            'nik' => "admin",
+            'password' => bcrypt(1234),
+            'name' => "admin",
+            'email' => "admin@example.com",
+            'phone' => "087889643945",
+            'department_id' => $departments->random()->id,
+            'is_active' => true,
+        ]);
         $users = collect();
         for ($i = 1; $i <= 10; $i++) {
             $users->push(User::create([
+                'nik' => "User $i",
+                'password' => bcrypt(1234),
                 'name' => "User $i",
                 'email' => "user$i@example.com",
                 'phone' => "08123456789$i",

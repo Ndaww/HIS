@@ -3,12 +3,26 @@
     <div class="header-breadcrumb">
         <h2 id="page-title">Daftar Tiket</h2>
         <div class="breadcrumb" id="breadcrumb"> <span>Ticketing</span> / Daftar Tiket </div>
-        {{-- <div class="breadcrumb" id="breadcrumb">Beranda</div> --}}
     </div>
 
     <div class="card">
         <div class="card-header">Daftar Tiket</div>
         <div class="card-body">
+            {{-- @dd(auth()->user()->department_id) --}}
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="start_date">Dari Tanggal</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date">Sampai Tanggal</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <div class="col-md-3 align-self-end">
+                    <button id="filter" class="btn btn-primary"> <i class="ri ri-filter-line"></i>Filter</button>
+                    <button id="reset" class="btn btn-secondary"><i class="ri ri-refresh-line"></i> Reset</button>
+                </div>
+            </div>
             <table id="tickets-table" class="display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -31,36 +45,95 @@
         
     </div>
 
-    
+    <!-- Modal View -->
+  <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Ini Modal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+            <form action="/ticketing" method="POST">
+            @method('put')
+            {{-- <div class="row mb-3">
+                <div class="col-6">
+                    <label for=""></label>
+                </div>
+            </div> --}}
 
-<script src="{{asset('/assets/js/jquery.js')}}"></script>
-<script src="{{asset('/assets/js/jquery.datatables.js')}}"></script>
+            </form>
+          Ini isi dari modal yang muncul saat tombol diklik.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Modal View 2 -->
+  <div class="modal fade" id="myModal2" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Ini Modal 2</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <form action="">
+            @csrf
+            
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+@endsection
+
+
+@section('js')
 <script>
-  $(document).ready(function() {
-        $('#tickets-table').DataTable({
+ $(document).ready(function () {
+        let table = $('#tickets-table').DataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            ajax: '{{ route('list-ticket') }}',
-            dom: 'lBfrtip', 
+            ajax: {
+                url: '{{ route('list-ticket') }}',
+                data: function (d) {
+                    d.start_date = $('#start_date').val();
+                    d.end_date = $('#end_date').val();
+                }
+            },
+            lengthMenu: [10, 25, 50, 100],
+            dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6 text-end'B>>" +
+                "<'row mb-3'<'col-sm-12'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row mt-3'<'col-sm-5'i><'col-sm-7'p>>",
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    title: 'Laporan Pengunjung'
+                    className: 'btn btn-success',
+                    title: 'Daftar Ticketing'
                 },
                 {
                     extend: 'print',
-                    title: 'Laporan Pengunjung'
+                    className: 'btn btn-primary',
+                    title: 'Daftar Ticketing'
                 }
             ],
             columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex',orderable: false, searchable: false },
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                 { data: 'ticket_number' },
                 { data: 'title' },
                 { data: 'description' },
-                { data: 'requester_id' },
-                { data: 'department_id' },
-                { data: 'assigned_employee_id' },
+                { data: 'requester_name', name: 'requester.name' },
+                { data: 'dept_name', name: 'dept.name' },
+                { data: 'assigned_name', name: 'assigned.name' },
                 { data: 'status' },
                 { data: 'priority' },
                 { data: 'created_at' },
@@ -68,6 +141,196 @@
                 { data: 'action', orderable: false, searchable: false },
             ]
         });
+
+        $('#filter').on('click', function () {
+            // console.log('Filter:', $('#start_date').val(), $('#end_date').val()); // ✅ DEBUG
+
+            table.ajax.reload();
+        });
+
+        $('#reset').on('click', function () {
+            $('#start_date').val('');
+            $('#end_date').val('');
+            table.ajax.reload();
+        });
+
+        table.on('draw', function () {
+            const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+            popoverTriggerList.forEach(el => {
+                new bootstrap.Popover(el, { trigger: 'hover', placement: 'top' });
+            });
+        });
+
+
+        // show modal & data saat di klik
+        $('#tickets-table').on('click', '.btn-view', function () {
+            const id = $(this).data('id');
+
+            $.get('/api/ticket/' + id, function (res) {
+                let buttonHtml = '';
+                if (res.status === 'closed') {
+                    buttonHtml = `<button type="button" class="btn btn-outline-success" disabled>Ticket Sudah Selesai</button>`;
+                } else {
+                    buttonHtml = `<button type="submit" class="btn btn-success">Close Ticket</button>`;
+                }
+
+                // Lampiran type: open
+                let attachmentOpenHTML = '';
+                if (res.attachments_open && res.attachments_open.length > 0) {
+                    attachmentOpenHTML += `<div class="mt-3"><strong>Lampiran (Open):</strong><div class="row g-2 mt-1">`;
+                    
+                    for (let i = 0; i < res.attachments_open.length; i++) {
+                        const item = res.attachments_open[i];
+
+                        attachmentOpenHTML += `
+                            <div class="col-4">
+                                <a href="${item.file_path}" target="_blank">
+                                    <img src="${item.file_path}" class="img-fluid rounded border" style="max-height: 100px; object-fit: cover;" />
+                                </a>
+                            </div>
+                        `;
+                    }
+
+                    attachmentOpenHTML += `</div></div>`;
+                }
+
+                // Lampiran type: close
+                let attachmentCloseHTML = '';
+                if (res.attachments_close && res.attachments_close.length > 0) {
+                    attachmentCloseHTML += `<div class="mt-3"><strong>Lampiran (Close):</strong><div class="row g-2 mt-1">`;
+
+                    for (let i = 0; i < res.attachments_close.length; i++) {
+                        const item = res.attachments_close[i];
+
+                        attachmentCloseHTML += `
+                            <div class="col-4">
+                                <a href="${item.file_path}" target="_blank">
+                                    <img src="${item.file_path}" class="img-fluid rounded border" style="max-height: 100px; object-fit: cover;" />
+                                </a>
+                            </div>
+                        `;
+                    }
+
+                    attachmentCloseHTML += `</div></div>`;
+                }
+
+
+                $('#myModalLabel').text('Detail Tiket #' + res.ticket_number);
+                $('#myModal .modal-body').html(`
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Nomor Tiket</div>
+                        <div class="col-8">${res.ticket_number}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Judul</div>
+                        <div class="col-8">${res.title}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Deskripsi</div>
+                        <div class="col-8">${res.description}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Status</div>
+                        <div class="col-8">${res.status}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Prioritas</div>
+                        <div class="col-8">${res.priority}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Requester</div>
+                        <div class="col-8">${res.requester_name}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Department</div>
+                        <div class="col-8">${res.department_name}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Dibuat Pada</div>
+                        <div class="col-8">${res.created_at}</div>
+                    </div>
+                    ${attachmentOpenHTML}
+                    ${attachmentCloseHTML}
+                    <form action="/ticketing/selesai" method="POST" id="form-selesai">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="id" value="${res.id}">
+                        ${buttonHtml}
+                    </form>
+                `);
+
+                new bootstrap.Modal(document.getElementById('myModal')).show();
+            });
+        });
     });
+
+    // button untuk lihat dan close ticket
+    $(document).on('submit', '#form-selesai', function (e) {
+        e.preventDefault(); 
+
+        let formData = new FormData(this);
+        Swal.fire({
+            title: 'Apakah kamu yakin?',
+            text: "Tiket ini akan ditandai sebagai selesai.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, tandai selesai',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // e.target.submit(); 
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function () {
+                        Swal.showLoading();
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            html: `<p>${response.message}</p> <p><strong>Nomor Tiket:</strong> ${response.ticket_number}</p>`,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function (xhr) {
+                        let errorMsg = "Terjadi kesalahan saat mengirim.";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: errorMsg
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+
+    // Saat modal Delegasikan diklik
+    $('#tickets-table').on('click', '.btn-delegasi', function () {
+        const id = $(this).data('id');
+
+        $('#myModal2 .modal-title').text('Delegasi Tiket #' + id);
+        $('#myModal2 .modal-body').html('Silakan delegasikan tiket ID: <strong>' + id + '</strong>');
+
+        const modal = new bootstrap.Modal(document.getElementById('myModal2'));
+        modal.show();
+    });
+
+    
+    // const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    // popoverTriggerList.forEach(el => {
+    //     new bootstrap.Popover(el, { trigger: 'hover', placement: 'top' });
+    // });
 </script>
 @endsection

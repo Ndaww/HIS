@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header">Buat Tiket</div>
         <div class="card-body">
-        <form action="{{ route('ticketing.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="ticket-form" action="{{ route('ticketing.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="mb-3">
@@ -63,7 +63,10 @@
 @endif
     </div>
 
-<script>
+@endsection
+
+@section('js')
+    <script>
     let fileCount = 0;
     const maxFiles = 3;
     const fileWrapper = document.getElementById('file-wrapper');
@@ -100,6 +103,48 @@
         } else {
             alert('Maksimal 3 file saja!');
         }
+    });
+
+    $(document).ready(function () {
+        $('#ticket-form').on('submit', function (e) {
+            e.preventDefault(); // Cegah reload
+
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    Swal.showLoading(); // Optional loading indicator
+                },
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        // text: 'Tiket berhasil dikirim.',
+                        html: `<p>Tiket Berhasil Dikirim </p> <p><strong>Nomor Tiket:</strong> ${response.ticket_number}</p>`,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        $('#ticket-form')[0].reset();
+                        $('#file-wrapper').empty(); // Kosongkan input file
+                    });
+                },
+                error: function (xhr) {
+                    let errorMsg = "Terjadi kesalahan saat mengirim.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: errorMsg
+                    });
+                }
+            });
+        });
     });
 </script>
 @endsection

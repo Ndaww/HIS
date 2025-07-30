@@ -8,7 +8,8 @@ use App\Http\Requests\UpdateTicketRequest;
 use App\Models\Department;
 use App\Models\TicketAttachment;
 use App\Models\User;
-use Illuminate\Support\Facades\Request;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class TicketController extends Controller
@@ -44,42 +45,53 @@ class TicketController extends Controller
      */
     public function store(StoreTicketRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required',
-            'priority' => 'required|in:low,medium,high',
-            'department_id' => 'required|exists:departments,id',
-            'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,webp|max:2048' // max 2mb
-        ]);
-
-        $department = Department::find($request->department_id);
-        $nomorTiket = $this->generateNomorTiket(strtoupper($department->short_name ?? $department->name));
-
-
-        $ticket = Ticket::create([
-            'ticket_number' => $nomorTiket,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'requester_id' =>  1 ,//auth()->id(),
-            'department_id' => $validated['department_id'],
-            'priority' => $validated['priority'],
-            'status' => 'open',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        if ($request->hasFile('attachments')) {
-        foreach ($request->file('attachments') as $file) {
-            $filename = $file->store('attachments', 'public');
-
-            // Simpan ke tabel ticket_attachments jika ada
-            TicketAttachment::create([
-                'ticket_id' => $ticket->id,
-                'file_path' => $filename
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required',
+                'priority' => 'required|in:low,medium,high',
+                'department_id' => 'required|exists:departments,id',
+                'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,webp|max:2048' // max 2mb
             ]);
-        }
-    }
 
+            $department = Department::find($request->department_id);
+            $nomorTiket = $this->generateNomorTiket(strtoupper($department->short_name ?? $department->name));
+
+            $ticket = Ticket::create([
+                'ticket_number' => $nomorTiket,
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'requester_id' => auth()->user()->id,
+                'department_id' => $validated['department_id'],
+                'priority' => $validated['priority'],
+                'status' => 'open',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $filename = $file->store('attachments', 'public');
+
+                    TicketAttachment::create([
+                        'ticket_id' => $ticket->id,
+                        'file_path' => $filename
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Tiket berhasil dikirim!',
+                'ticket_number' => $ticket->ticket_number
+            ], 200);
+
+        } catch (\Throwable $e) {
+            // Jika error terjadi
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan tiket.',
+                'error' => $e->getMessage() // untuk debug, bisa dihilangkan saat production
+            ], 500);
+        }
     }
 
     /**
@@ -114,17 +126,84 @@ class TicketController extends Controller
         //
     }
 
-    public function getData(Request $request)
+    public function selesai(Request $request)
+    {
+        
+        try {
+            $ticket = Ticket::where('id',$request->id)->get()[0];
+            Ticket::where('id',$request->id)->update([
+                'status' => 'closed',
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'message' => 'Tiket Selesai!',
+                'ticket_number' => $ticket->ticket_number
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    public function getDataTiketSaya(Request $request)
     {
         try {
-            $tickets = Ticket::query();
+            $user = auth()->user()->id;
+            $tickets = Ticket::query()->where('requester_id',$user);
+
+            $startInput = $request->query('start_date');
+            $endInput = $request->query('end_date');
+
+            if (!empty($startInput) && !empty($endInput)) {
+                \Log::info('Start Date: ' . $startInput);
+                \Log::info('End Date: ' . $endInput);
+
+                try {
+                    $start = Carbon::parse($startInput)->startOfDay();
+                    $end = Carbon::parse($endInput)->endOfDay();
+
+                    $tickets = $tickets->whereBetween('created_at', [$start, $end]);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
+                }
+            }
+
 
             return DataTables::of($tickets)
                 ->addIndexColumn()
                 ->addColumn('action', function ($ticket) {
-                    return '<a href="#" class="btn btn-sm btn-outline-info"><i class="ri-sm ri-eye-line"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-primary"><i class="ri-sm ri-send-plane-line"></i></a>
+                    // $isDisabled = $ticket->status !== 'closed' ? 'disabled' : '';
+                     return '
+                        <a href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-info btn-view" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Lihat" 
+                            title="Lihat">
+                            <i class="ri-sm ri-eye-line"></i>
+                        </a>
+
+                        <a href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Delegasikan" 
+                            title="Delegasikan">
+                            <i class="ri-sm ri-send-plane-line"></i>
+                        </a>
                     ';
+                })
+
+                ->addColumn('requester_name', function ($ticket) {
+                return optional($ticket->requester)->name ?? '-';
+                })
+                ->addColumn('dept_name', function ($ticket) {
+                return optional($ticket->dept)->name ?? '-';
+                })
+                ->addColumn('assigned_name', function ($ticket) {
+                return optional($ticket->assigned)->name ?? '-';
                 })
                 ->editColumn('created_at', function($ticket){
                     return $ticket->created_at->format('d-m-Y H:i');
@@ -141,6 +220,36 @@ class TicketController extends Controller
             ]);
         }
     }
+
+    public function getSingleTicketSaya($id)
+    {
+        $ticket = Ticket::with(['requester', 'dept','attachmentsOpen','attachmentsClose'])->findOrFail($id);
+
+        return response()->json([
+            'id' => $ticket->id,
+            'ticket_number' => $ticket->ticket_number,
+            'title' => $ticket->title,
+            'description' => $ticket->description,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'created_at' => $ticket->created_at->format('d-m-Y H:i'),
+            'requester_name' => optional($ticket->requester)->name,
+            'department_name' => optional($ticket->dept)->name,
+            'attachments_open' => $ticket->attachmentsOpen->map(function ($a) {
+                return [
+                    'file_path' => asset('/storage/'.$a->file_path),
+                    'type' => $a->type,
+                ];
+            }),
+            'attachments_close' => $ticket->attachmentsClose->map(function ($a) {
+                return [
+                    'file_path' => asset('/storage/'.$a->file_path),
+                    'type' => $a->type,
+                ];
+            })
+        ]);
+    }
+
 
     private function generateNomorTiket($departmentName)
     {
