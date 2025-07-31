@@ -155,10 +155,6 @@
 
             $.get('/reports/api/ticket/' + id, function (res) {
                 let buttonHtml = '';
-                
-                if (res.status === 'open') {
-                    buttonHtml += `<button type="submit" class="btn-sm btn-primary mt-3 me-1">Progress Ticket <i class="ri ri-progress-1-fill"></i></button>`;
-                }
 
                 // Lampiran type: open
                 let attachmentOpenHTML = '';
@@ -202,7 +198,7 @@
 
                     attachmentCloseHTML += `</div></div>`;
                 } else {
-                    attachmentOpenHTML += `<div class="mt-3"><strong>Lampiran (Open): -- Tidak Ada Lampiran Solve -- </strong><div class="row g-2 mt-1">`;
+                    attachmentOpenHTML += `<div class="mt-3"><strong>Lampiran (Solve): -- Tidak Ada Lampiran Solve -- </strong><div class="row g-2 mt-1">`;
                     attachmentOpenHTML += `</div></div>`;
                 }
 

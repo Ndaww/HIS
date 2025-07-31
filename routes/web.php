@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,10 @@ Route::post('/ticketing/solve', [TicketController::class, 'solve']);
 Route::post('/ticketing/eskalasi', [TicketController::class, 'escalate']);
 Route::post('/ticketing/selesai', [TicketController::class, 'selesai']);
 Route::resource('/ticketing',TicketController::class)->middleware('auth');
+
+Route::get('/ajax/get-equipment-by-rooms', [PreventiveTaskController::class, 'getEquipmentByRooms'])
+    ->name('ajax.getEquipmentByRooms');
+Route::resource('/preventive',PreventiveTaskController::class);
 
 
 Route::get('/reports/ticket', [ReportController::class, 'indexTicket']);

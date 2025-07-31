@@ -14,6 +14,15 @@
           </ul>
         </li>
         <li>
+          <div class="parent {{request()->is('preventive*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow">▶</span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('preventive*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('preventive/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/create">Buat Jadwal</a></li>
+          </ul>
+        </li>
+        <li>
           <div class="parent {{request()->is('reports*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-folder-5-line"></i> Laporan <span class="arrow">▶</span>
          </div>

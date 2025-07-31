@@ -3,11 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
+use App\Models\EquipmentPreventiveType;
+use App\Models\MasterEquipment;
+use App\Models\MasterEquipmentType;
+use App\Models\MasterPreventive;
+use App\Models\MasterRoom;
 use App\Models\Ticket;
 use App\Models\TicketSubstitution;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -105,6 +112,83 @@ class DatabaseSeeder extends Seeder
                 'to_user_id' => $to->id,
                 'reason' => 'Pegawai sedang cuti',
             ]);
+        }
+
+        // Master Room
+        foreach (range(1, 3) as $lantai) {
+            foreach (range(1, 10) as $no) {
+                MasterRoom::create([
+                    'name' => 'Ruangan ' . str_pad($no, 2, '0', STR_PAD_LEFT),
+                    'floor' => 'Lantai ' . $lantai,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // Master Tipe Equipment
+        $equipmentTypes = ['AC', 'Genset', 'Infus Pump'];
+        foreach ($equipmentTypes as $type) {
+            MasterEquipmentType::create([
+                'name' => $type,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Mater Tipe Preventive
+        // Preventive Types
+        $preventives = [
+            ['name' => 'Cek Freon', 'for' => 'AC'],
+            ['name' => 'Ganti Filter', 'for' => 'AC'],
+            ['name' => 'Cek Oli', 'for' => 'Genset'],
+            ['name' => 'Uji Beban', 'for' => 'Genset'],
+            ['name' => 'Kalibrasi', 'for' => 'Infus Pump'],
+            ['name' => 'Tes Alarm', 'for' => 'Infus Pump'],
+        ];
+
+        foreach ($preventives as $preventive) {
+            MasterPreventive::create([
+                'name' => $preventive['name'],
+                'description' => 'Untuk ' . $preventive['for'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Master Equipment Preventive Pivot
+        $typeMap = MasterEquipmentType::pluck('id', 'name');
+        $preventiveMap = MasterPreventive::pluck('id', 'name');
+
+        $pivotMap = [
+            'AC' => ['Cek Freon', 'Ganti Filter'],
+            'Genset' => ['Cek Oli', 'Uji Beban'],
+            'Infus Pump' => ['Kalibrasi', 'Tes Alarm']
+        ];
+
+        foreach ($pivotMap as $etype => $actions) {
+            foreach ($actions as $act) {
+                EquipmentPreventiveType::create([
+                    'equipment_type_id' => $typeMap[$etype],
+                    'preventive_type_id' => $preventiveMap[$act],
+                ]);
+            }
+        }
+
+        // Mater Equipment 
+        // Master Equipments (10 per jenis)
+        $roomIds = MasterRoom::pluck('id')->toArray();
+        foreach ($typeMap as $etype => $typeId) {
+            foreach (range(1, 10) as $i) {
+                MasterEquipment::create([
+                    'name' => $etype . ' ' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                    'serial_number' => Str::upper(Str::random(3)) . '-' . rand(10000,99999),
+                    'room_id' => $roomIds[array_rand($roomIds)],
+                    'equipment_type_id' => $typeId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 }
