@@ -22,15 +22,31 @@ class TelegramTicketNotification extends Notification
 
     public function toTelegram($notifiable)
     {
-        \Log::info($this->ticket->id.'telenotif');
+        // \Log::info($this->ticket->pending_reason.$this->ticket->status.'telenotif');
         try {
+            $pending = "";
+            $name = auth()->user()->name;
             if($this->ticket->status == 'open'){
                 $header  = "<b>[{$this->ticket->status}]</b>";
             }
-            if($this->ticket->status == 'in_progress'){
-                $header  = "<b>[Processed by : {$this->ticket->assigned->name}]</b>";
-                $header  .= "\n<b>[Date : {$this->ticket->updated_at}]</b>";
+            if($this->ticket->status == 'in_progress' ){
+                if($this->ticket->assigned_employee_id != auth()->user()->id ){
+                    $header  = "<b>[Delegated by : {$this->ticket->dept->head->name}]</b>\nTo\n<b>[Processed by : {$this->ticket->assigned->name}]</b>";
+                } else {
+                    $header  = "<b>[Processed by : {$this->ticket->assigned->name}]</b>";
+                }
             }
+            if($this->ticket->status == 'pending'){
+                $header  = "<b>[Pending by : {$this->ticket->assigned->name}]</b>";
+                $pending = "<b>[ Alasan Pending ] \n{$this->ticket->pending_reason} </b>";
+            }
+            if($this->ticket->status == 'escalated'){
+                $header  = "<b>[ Escalated from : {$name} ] \n[ Escalated to : {$this->ticket->assigned->name} ]</b>";
+            }
+            if($this->ticket->status == 'solved'){
+                $header  = "<b>[Solved by : {$this->ticket->assigned->name}]</b>";
+            }
+            
 
             $message = <<<MSG
                         $header
@@ -39,13 +55,15 @@ class TelegramTicketNotification extends Notification
                         <b>From:</b> {$this->ticket->requester->name}
                         <b>Department:</b> {$this->ticket->dept->name}
                         <b>Message:</b> {$this->ticket->description}
+                        
+                        $pending
 
                         <a href="http://127.0.0.1:8000/ticketing/{$this->ticket->id}/show"> http://127.0.0.1:8000/ticketing/{$this->ticket->id}/show </a>
                         MSG;
              
 
             return TelegramMessage::create()
-                ->to(env('TELEGRAM_CHAT_ID')) // atau langsung chat_id
+                ->to(env('TELEGRAM_CHAT_ID'))
                 ->content($message)
                 ->options(['parse_mode' => 'HTML']);
 
@@ -53,6 +71,7 @@ class TelegramTicketNotification extends Notification
 
         } catch (\Throwable $e) {
             \Log::info('Ticket asd', ['ticket' => $this->ticket]);
+            \Log::info($pending.'Pending woi');
 
             throw $e;
         }

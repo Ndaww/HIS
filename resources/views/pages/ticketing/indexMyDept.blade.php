@@ -58,7 +58,7 @@
 
     <!-- Modal View -->
   <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-lg modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="myModalLabel">Ini Modal</h5>
@@ -74,19 +74,16 @@
     </div>
   </div>
 
-    <!-- Modal View 2 -->
-  <div class="modal fade" id="myModal2" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <!-- Modal Delegasi -->
+  <div class="modal fade" id="myModalDelegasi" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-lg modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">Ini Modal 2</h5>
+          <h5 class="modal-title" id="myModalLabel">Ini Modal</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
         <div class="modal-body">
-          <form action="">
-            @csrf
             
-          </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -94,6 +91,7 @@
       </div>
     </div>
   </div>
+
 @endsection
 
 
@@ -166,7 +164,7 @@
         // });
 
 
-        // show modal & data saat di klik
+        // show modal view & data saat di klik
         $('#tickets-table').on('click', '.btn-view', function () {
             const id = $(this).data('id');
 
@@ -266,7 +264,7 @@
         });
     });
 
-    // button untuk lihat dan progress ticket
+    // button untuk progress ticket
     $(document).on('submit', '#form-progress', function (e) {
         e.preventDefault(); 
         const userName = "{{ auth()->user()->name }}";
@@ -321,14 +319,121 @@
 
     // Saat modal Delegasikan diklik
     $('#tickets-table').on('click', '.btn-delegasi', function () {
-        const id = $(this).data('id');
+            const id = $(this).data('id');
 
-        $('#myModal2 .modal-title').text('Delegasi Tiket #' + id);
-        $('#myModal2 .modal-body').html('Silakan delegasikan tiket ID: <strong>' + id + '</strong>');
+            $.get('/api/ticket-dept/' + id, function (res) {
+                let buttonHtml = '';
+                
+                if (res.status === 'open') {
+                    buttonHtml += `<button type="submit" class="btn-sm btn-primary mt-3 me-1">Delegasikan <i class="ri ri-plane-line"> </i></button>`;
+                }
 
-        const modal = new bootstrap.Modal(document.getElementById('myModal2'));
-        modal.show();
-    });
+                // Lampiran type: open
+                let attachmentOpenHTML = '';
+                if (res.attachments_open && res.attachments_open.length > 0) {
+                    attachmentOpenHTML += `<div class="mt-3"><strong>Lampiran (Open):</strong><div class="row g-2 mt-1">`;
+                    
+                    for (let i = 0; i < res.attachments_open.length; i++) {
+                        const item = res.attachments_open[i];
+
+                        attachmentOpenHTML += `
+                            <div class="col-4">
+                                <a href="${item.file_path}" target="_blank">
+                                    <img src="${item.file_path}" class="img-fluid rounded border" style="max-height: 100px; object-fit: cover;" />
+                                </a>
+                            </div>
+                        `;
+                    }
+
+                    attachmentOpenHTML += `</div></div>`;
+                }
+
+                // Lampiran type: close
+                let attachmentCloseHTML = '';
+                if (res.attachments_close && res.attachments_close.length > 0) {
+                    attachmentCloseHTML += `<div class="mt-3"><strong>Lampiran (Close):</strong><div class="row g-2 mt-1">`;
+
+                    for (let i = 0; i < res.attachments_close.length; i++) {
+                        const item = res.attachments_close[i];
+
+                        attachmentCloseHTML += `
+                            <div class="col-4">
+                                <a href="${item.file_path}" target="_blank">
+                                    <img src="${item.file_path}" class="img-fluid rounded border" style="max-height: 100px; object-fit: cover;" />
+                                </a>
+                            </div>
+                        `;
+                    }
+
+                    attachmentCloseHTML += `</div></div>`;
+                }
+
+                let employeeOptions = '';
+
+                if (res.employees && res.employees.length > 0) {
+                    employeeOptions += `
+                        <div class="mt-3">
+                            <label for="delegated_employee" class="form-label fw-bold">Delegasikan ke</label>
+                            <select class="form-select" name="delegated_employee" id="delegated_employee" required>
+                                <option value="" disabled selected>-- Pilih Pegawai --</option>
+                    `;
+
+                    res.employees.forEach(function(employee) {
+                        employeeOptions += `<option value="${employee.id}">${employee.name}</option>`;
+                    });
+
+                    employeeOptions += `</select></div>`;
+                }
+
+
+
+                $('#myModalLabel').text('Detail Tiket #' + res.ticket_number);
+                $('#myModalDelegasi .modal-body').html(`
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Nomor Tiket</div>
+                        <div class="col-8">${res.ticket_number}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Judul</div>
+                        <div class="col-8">${res.title}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Deskripsi</div>
+                        <div class="col-8">${res.description}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Status</div>
+                        <div class="col-8">${res.status}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Prioritas</div>
+                        <div class="col-8">${res.priority}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Requester</div>
+                        <div class="col-8">${res.requester_name}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Department</div>
+                        <div class="col-8">${res.department_name}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">Dibuat Pada</div>
+                        <div class="col-8">${res.created_at}</div>
+                    </div>
+                    ${attachmentOpenHTML}
+                    ${attachmentCloseHTML}
+                    <form action="/ticketing/delegasi" method="POST" id="form-delegasi">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="id" value="${res.id}">
+                        ${employeeOptions}
+                        ${buttonHtml}
+                    </form>
+                `);
+
+                new bootstrap.Modal(document.getElementById('myModalDelegasi')).show();
+            });
+        });
 
     
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');

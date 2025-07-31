@@ -9,4 +9,6 @@ class TicketSubstitution extends Model
 {
     /** @use HasFactory<\Database\Factories\TicketSubstitutionFactory> */
     use HasFactory;
+
+    protected $guarded =[];
 }

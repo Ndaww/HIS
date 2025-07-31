@@ -9,4 +9,9 @@ class Department extends Model
 {
     /** @use HasFactory<\Database\Factories\DepartmentFactory> */
     use HasFactory;
+
+    public function head()
+    {
+        return $this->belongsTo(User::class, 'head_id');
+    }
 }

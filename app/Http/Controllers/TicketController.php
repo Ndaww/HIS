@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Models\Department;
 use App\Models\TicketAttachment;
+use App\Models\TicketSubstitution;
 use App\Models\User;
 use App\Notifications\TelegramTicketNotification;
 use Carbon\Carbon;
@@ -35,7 +36,7 @@ class TicketController extends Controller
         $tickets = Ticket::all();
         // dd($tickets);
 
-        return view ('pages.ticketing.indexMyDept',[
+        return view ('pages.ticketing.indexMyDept2',[
             'tickets' => $tickets
         ]);
     }
@@ -157,6 +158,43 @@ class TicketController extends Controller
         //
     }
 
+    public function delegasi(Request $request)
+    {
+        
+        try {
+
+            $ticket = Ticket::findOrFail($request->id);
+            $ticket->update([
+                'status' => 'in_progress',
+                'updated_at' => now(),
+                'assigned_employee_id' => $request->delegated_employee
+            ]);
+
+            $ticket->load(['requester', 'dept','assigned']);
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                \Log::info($ticket);
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => 'Tiket Berhasil Didelegasikan!',
+                'ticket_number' => $ticket->ticket_number,
+                'assigned' => $ticket->assigned->name
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
     public function progress(Request $request)
     {
         
@@ -184,6 +222,143 @@ class TicketController extends Controller
 
             return response()->json([
                 'message' => 'Tiket Diproses!',
+                'ticket_number' => $ticket->ticket_number,
+                'assigned' => $ticket->assigned->name
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    public function pending(Request $request)
+    {
+        
+        try {
+            
+            $ticket = Ticket::findOrFail($request->id);
+            $ticket->update([
+                'status' => 'pending',
+                'updated_at' => now(),
+                'pending_reason' => $request->reason
+            ]);
+
+            $ticket->load(['requester', 'dept','assigned']);
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                \Log::info($ticket);
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => 'Tiket Dipending!',
+                'ticket_number' => $ticket->ticket_number,
+                'assigned' => $ticket->assigned->name
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    public function solve(Request $request)
+    {
+        
+        try {
+            $request->validate([
+                'keterangan' => 'nullable|string|max:1000',
+                'attachments.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+            ]);
+            
+            $ticket = Ticket::findOrFail($request->id);
+            $ticket->update([
+                'status' => 'solved',
+                'updated_at' => now(),
+            ]);
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $filename = $file->store('attachments', 'public');
+
+                    TicketAttachment::create([
+                        'ticket_id' => $ticket->id,
+                        'type' => 'solved',
+                        'file_path' => $filename
+                    ]);
+                }
+            }
+
+            $ticket->load(['requester', 'dept','assigned']);
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                \Log::info($ticket);
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => 'Tiket Dipending!',
+                'ticket_number' => $ticket->ticket_number,
+                'assigned' => $ticket->assigned->name
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    public function escalate(Request $request)
+    {
+        
+        try {
+
+            $ticket = Ticket::findOrFail($request->id);
+            $ticket->update([
+                'status' => 'escalated',
+                'updated_at' => now(),
+                'assigned_employee_id' => $request->escalated_employee
+            ]);
+
+            $ticket->load(['requester', 'dept','assigned']);
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                \Log::info($ticket);
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            TicketSubstitution::create([
+                'ticket_id' => $request->id,
+                'from_user_id' => auth()->user()->id,
+                'to_user_id' => $request->escalated_employee,
+                'reason' => $request->escalated_reason
+            ]);
+
+            $ticket->update([
+                'status' => 'in_progress',
+            ]);
+
+            return response()->json([
+                'message' => 'Tiket Berhasil dieskalasi ke '.$ticket->assigned->name,
                 'ticket_number' => $ticket->ticket_number,
                 'assigned' => $ticket->assigned->name
             ], 200);
@@ -325,8 +500,10 @@ class TicketController extends Controller
     {
         try {
             $user = auth()->user();
-            $tickets = Ticket::query()->where('department_id',$user->department_id);
             $head = Department::where('head_id',$user->id)->count();
+
+            $tickets = Ticket::query()->where('department_id',$user->department_id);
+            $myTicket = Ticket::where('assigned_employee_id', auth()->user()->id)->pluck('id')->toArray();
 
             $startInput = $request->query('start_date');
             $endInput = $request->query('end_date');
@@ -355,12 +532,14 @@ class TicketController extends Controller
 
             return DataTables::of($tickets)
                 ->addIndexColumn()
-                ->addColumn('action', function ($ticket) use($head) {
+                ->addColumn('action', function ($ticket) use($head,$myTicket) {
                     $isOpen = $ticket->status === 'open' ? '' : 'disabled';
-                    $isHead = $head > 0 ? '' : 'disabled';
+                    $isHead = $head > 0 && $ticket->status =='open' ? '' : 'disabled';
+                    $isMyTicket = in_array($ticket->id, $myTicket) ? '' : 'disabled';
+
                      return '
                         <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-info btn-view" 
+                            class="btn btn-sm btn-info btn-view" 
                             data-id="'.$ticket->id.'" 
                             data-bs-toggle="popover" 
                             data-bs-content="Lihat" 
@@ -369,46 +548,40 @@ class TicketController extends Controller
                         </button>
 
                         <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-primary "'. $isOpen .'" btn-progress" 
+                            class="btn btn-sm btn-primary btn-delegasi" 
                             data-id="'.$ticket->id.'" 
                             data-bs-toggle="popover" 
                             data-bs-content="Delegasikan" 
-                            title="Delegasikan" disabled>
+                            title="Delegasikan" '."$isHead".' >
                             <i class="ri-sm ri-send-plane-line"></i>
                         </button>
 
-                        <a href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-primary"'. $isHead .'" btn-delegasi" 
+                        <button href="javascript:void(0)" 
+                            class="btn btn-sm btn-danger btn-pending" 
                             data-id="'.$ticket->id.'" 
                             data-bs-toggle="popover" 
-                            data-bs-content="Delegasikan" 
-                            title="Delegasikan">
-                            <i class="ri-sm ri-send-plane-line"></i>
-                        </a>
-                        <a href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
+                            data-bs-content="Pending" 
+                            title="Pending" '." $isMyTicket ".'>
+                            <i class="ri-sm ri-compass-4-line"></i>
+                        </button>
+
+                        <button href="javascript:void(0)" 
+                            class="btn btn-sm btn-success btn-solve" 
                             data-id="'.$ticket->id.'" 
                             data-bs-toggle="popover" 
-                            data-bs-content="Delegasikan" 
-                            title="Delegasikan">
-                            <i class="ri-sm ri-send-plane-line"></i>
-                        </a>
-                        <a href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
+                            data-bs-content="Solved" 
+                            title="Solved" '." $isMyTicket ".'>
+                            <i class="ri-sm ri-check-line"></i>
+                        </button>
+
+                        <button href="javascript:void(0)" 
+                            class="btn btn-sm btn-warning btn-eskalasi" 
                             data-id="'.$ticket->id.'" 
                             data-bs-toggle="popover" 
-                            data-bs-content="Delegasikan" 
-                            title="Delegasikan">
-                            <i class="ri-sm ri-send-plane-line"></i>
-                        </a>
-                        <a href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Delegasikan" 
-                            title="Delegasikan">
-                            <i class="ri-sm ri-send-plane-line"></i>
-                        </a>
+                            data-bs-content="Eskalasi" 
+                            title="Eskalasi" '." $isMyTicket ".'>
+                            <i class="ri-sm ri-exchange-2-line"></i>
+                        </button>
                     ';
                 })
 
@@ -440,8 +613,9 @@ class TicketController extends Controller
     public function getSingleTicketDept($id)
     {
         $ticket = Ticket::with(['requester', 'dept','attachmentsOpen','attachmentsClose'])->findOrFail($id);
+        $isHead = Department::where('head_id', auth()->user()->id)->count();
 
-        return response()->json([
+        $response = [
             'id' => $ticket->id,
             'ticket_number' => $ticket->ticket_number,
             'title' => $ticket->title,
@@ -453,18 +627,29 @@ class TicketController extends Controller
             'department_name' => optional($ticket->dept)->name,
             'attachments_open' => $ticket->attachmentsOpen->map(function ($a) {
                 return [
-                    'file_path' => asset('/storage/'.$a->file_path),
+                    'file_path' => asset('/storage/' . $a->file_path),
                     'type' => $a->type,
                 ];
             }),
             'attachments_close' => $ticket->attachmentsClose->map(function ($a) {
                 return [
-                    'file_path' => asset('/storage/'.$a->file_path),
+                    'file_path' => asset('/storage/' . $a->file_path),
                     'type' => $a->type,
                 ];
-            })
-        ]);
+            }),
+        ];
+
+        if ($isHead > 0) {
+            $employees = User::where('department_id', auth()->user()->department_id)->get(['id', 'name']);
+            $response['employees'] = $employees;
+        }
+
+            $teams = User::where('department_id', auth()->user()->department_id)->get(['id', 'name']);
+            $response['teams'] = $teams;
+
+        return response()->json($response);
     }
+
 
 
     private function generateNomorTiket($departmentName)

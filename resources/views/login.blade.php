@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login | Rumah Sakit</title>
-  <link rel="stylesheet" href="{{ asset('/assets/bootstrap-5.0.2/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ secure_asset('/assets/bootstrap-5.0.2/css/bootstrap.min.css') }}">
   <style>
     body {
       background-color: #e9f7ef;
@@ -99,7 +99,7 @@
         Terima kasih telah menjadi bagian dari pelayanan kami.<br />
         Silakan login untuk melanjutkan aktivitas Anda.
       </p>
-      <img src="{{ asset('/assets/img/welcome.svg') }}" alt="Gambar Selamat Datang" width="100%">
+      <img src="{{ secure_asset('/assets/img/welcome.svg') }}" alt="Gambar Selamat Datang" width="100%">
       
     </div>
 
@@ -124,6 +124,6 @@
     </div>
   </div>
 
-  <script src="{{ asset('/assets/bootstrap-5.0.2/js/bootstrap.min.js') }}"></script>
+  <script src="{{ secure_asset('/assets/bootstrap-5.0.2/js/bootstrap.min.js') }}"></script>
 </body>
 </html>

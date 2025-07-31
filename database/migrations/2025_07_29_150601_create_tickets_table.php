@@ -21,6 +21,11 @@ return new class extends Migration
             $table->foreignId('assigned_employee_id')->nullable();//->constrained('users')->nullOnDelete();
             $table->enum('status', ['open', 'in_progress', 'pending', 'solved', 'closed', 'escalated'])->default('open');
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->timestamp('pending_date')->nullable();
+            $table->text('pending_reason')->nullable();
+            $table->timestamp('solve_date')->nullable();
+            $table->text('sovle_desc')->nullable();
+            $table->timestamp('closed_date')->nullable();
             $table->timestamps();
         });
     }
