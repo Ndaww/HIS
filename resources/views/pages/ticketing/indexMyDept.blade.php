@@ -2,7 +2,7 @@
 @section('main-content')
     <div class="header-breadcrumb">
         <h2 id="page-title">Daftar Tiket</h2>
-        <div class="breadcrumb" id="breadcrumb"> <span>Ticketing</span> / Daftar Tiket Saya </div>
+        <div class="breadcrumb" id="breadcrumb"> <span>Ticketing</span> / Daftar Tiket </div>
     </div>
 
     <div class="card">
@@ -58,23 +58,14 @@
 
     <!-- Modal View -->
   <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-lg modal-dialog">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="myModalLabel">Ini Modal</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
         <div class="modal-body">
-            <form action="/ticketing" method="POST">
-            @method('put')
-            {{-- <div class="row mb-3">
-                <div class="col-6">
-                    <label for=""></label>
-                </div>
-            </div> --}}
-
-            </form>
-          Ini isi dari modal yang muncul saat tombol diklik.
+            
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -83,6 +74,25 @@
     </div>
   </div>
 
+    <!-- Modal View 2 -->
+  <div class="modal fade" id="myModal2" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Ini Modal 2</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <form action="">
+            @csrf
+            
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
   </div>
 @endsection
 
@@ -95,14 +105,14 @@
             serverSide: true,
             responsive: true,
             ajax: {
-                url: '{{ route('list-ticket') }}',
+                url: '{{ route('list-ticket-dept') }}',
                 data: function (d) {
                     d.start_date = $('#start_date').val();
                     d.end_date = $('#end_date').val();
                     d.status = $('#status').val();
                 }
             },
-            lengthMenu: [10, 25, 50, 100],
+            lengthMenu: [10, 25, 50, 100, -1],
             dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6 text-end'B>>" +
                 "<'row mb-3'<'col-sm-12'f>>" +
                 "<'row'<'col-sm-12'tr>>" +
@@ -148,16 +158,23 @@
             table.ajax.reload();
         });
 
+        // table.on('draw', function () {
+        //     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        //     popoverTriggerList.forEach(el => {
+        //         new bootstrap.Popover(el, { trigger: 'hover', placement: 'top' });
+        //     });
+        // });
+
+
         // show modal & data saat di klik
         $('#tickets-table').on('click', '.btn-view', function () {
             const id = $(this).data('id');
 
             $.get('/api/ticket-dept/' + id, function (res) {
                 let buttonHtml = '';
-                if (res.status === 'closed') {
-                    buttonHtml = `<button type="button" class="btn btn-outline-success mt-3" disabled>Ticket Sudah Selesai <i class="ri ri-check-double-fill"></i></button>`;
-                } else {
-                    buttonHtml = `<button type="submit" class="btn btn-success mt-3 ">Close Ticket</button>`;
+                
+                if (res.status === 'open') {
+                    buttonHtml += `<button type="submit" class="btn-sm btn-primary mt-3 me-1">Progress Ticket <i class="ri ri-progress-1-fill"></i></button>`;
                 }
 
                 // Lampiran type: open
@@ -237,7 +254,7 @@
                     </div>
                     ${attachmentOpenHTML}
                     ${attachmentCloseHTML}
-                    <form action="/ticketing/selesai" method="POST" id="form-selesai">
+                    <form action="/ticketing/progress" method="POST" id="form-progress">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="id" value="${res.id}">
                         ${buttonHtml}
@@ -249,19 +266,19 @@
         });
     });
 
-    // button untuk lihat dan close ticket
-    $(document).on('submit', '#form-selesai', function (e) {
+    // button untuk lihat dan progress ticket
+    $(document).on('submit', '#form-progress', function (e) {
         e.preventDefault(); 
-
+        const userName = "{{ auth()->user()->name }}";
         let formData = new FormData(this);
         Swal.fire({
             title: 'Apakah kamu yakin?',
-            text: "Tiket ini akan ditandai sebagai selesai.",
+            html: "Tiket ini akan ditandai sebagai <br> <strong> dalam progress oleh : " + userName + "</strong>",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, tandai selesai',
+            confirmButtonText: 'Ya, Progress Ticket',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -299,6 +316,18 @@
                 });
             }
         });
+    });
+
+
+    // Saat modal Delegasikan diklik
+    $('#tickets-table').on('click', '.btn-delegasi', function () {
+        const id = $(this).data('id');
+
+        $('#myModal2 .modal-title').text('Delegasi Tiket #' + id);
+        $('#myModal2 .modal-body').html('Silakan delegasikan tiket ID: <strong>' + id + '</strong>');
+
+        const modal = new bootstrap.Modal(document.getElementById('myModal2'));
+        modal.show();
     });
 
     

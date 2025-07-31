@@ -10,7 +10,7 @@
           <ul class="child-menu" style="{{ request()->is('ticketing*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('ticketing/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/create">Buat Tiket</a></li>
             <li class="full-click {{ request()->is('ticketing') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing">Tiket Saya</a></li>
-            <li class="full-click {{ request()->is('ticketing/all') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/all">Semua Tiket</a></li>
+            <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li>
           </ul>
         </li>
         <li class="menu-item">📊 Laporan</li>

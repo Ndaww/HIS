@@ -101,7 +101,13 @@
             fileGroup.appendChild(removeBtn);
             fileWrapper.appendChild(fileGroup);
         } else {
-            alert('Maksimal 3 file saja!');
+            Swal.fire({
+                        icon: 'warning',
+                        title: 'Maksimal 3 File!',
+                        // text: 'Tiket berhasil dikirim.',
+                        // html: `<p>Tiket Berhasil Dikirim </p> <p><strong>Nomor Tiket:</strong> ${response.ticket_number}</p>`,
+                        confirmButtonText: 'OK'
+                    });
         }
     });
 
@@ -140,7 +146,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal!',
-                        text: errorMsg
+                        html: errorMsg
                     });
                 }
             });

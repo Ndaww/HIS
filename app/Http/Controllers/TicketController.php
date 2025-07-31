@@ -8,8 +8,11 @@ use App\Http\Requests\UpdateTicketRequest;
 use App\Models\Department;
 use App\Models\TicketAttachment;
 use App\Models\User;
+use App\Notifications\TelegramTicketNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+// use Illuminate\Notifications\Notification;
 use Yajra\DataTables\Facades\DataTables;
 
 class TicketController extends Controller
@@ -27,11 +30,23 @@ class TicketController extends Controller
         ]);
     }
 
+    public function indexMyDept()
+    {
+        $tickets = Ticket::all();
+        // dd($tickets);
+
+        return view ('pages.ticketing.indexMyDept',[
+            'tickets' => $tickets
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
+        // $response = Notification::route('telegram', '-4926836909')->notify(new TelegramTicketNotification("Test"));
+        // dd($response);
         $users = User::all();
         $departments = Department::all();
         return view('pages.ticketing.create',[
@@ -80,16 +95,32 @@ class TicketController extends Controller
                 }
             }
 
+            $ticket->load(['requester', 'dept']);
+            // \Log::info('Ticket created', ['ticket' => $ticket->toArray()]);
+            // Notification::route('telegram', env('TELEGRAM_CHAT_ID'))->notify(new TelegramTicketNotification($ticket));
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                // Log::info('Kirim Telegram', ['ticket' => $ticket->toArray()]);
+                // Log::info(env('TELEGRAM_CHAT_ID'));
+
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
             return response()->json([
                 'message' => 'Tiket berhasil dikirim!',
                 'ticket_number' => $ticket->ticket_number
             ], 200);
 
         } catch (\Throwable $e) {
-            // Jika error terjadi
             return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan tiket.',
-                'error' => $e->getMessage() // untuk debug, bisa dihilangkan saat production
+                'message' => 'Terjadi kesalahan saat menyimpan tiket <br> Pastikan masing-masing file berukuran maks. 2MB',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -126,6 +157,43 @@ class TicketController extends Controller
         //
     }
 
+    public function progress(Request $request)
+    {
+        
+        try {
+
+            $ticket = Ticket::findOrFail($request->id);
+            $ticket->update([
+                'status' => 'in_progress',
+                'updated_at' => now(),
+                'assigned_employee_id' => auth()->user()->id
+            ]);
+
+            $ticket->load(['requester', 'dept','assigned']);
+
+            try {
+                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+                ->notify(new TelegramTicketNotification($ticket));
+            } catch (\Throwable $e) {
+                \Log::info($ticket);
+                return response()->json([
+                    'message' => 'Gagal kirim notifikasi Telegram',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => 'Tiket Diproses!',
+                'ticket_number' => $ticket->ticket_number,
+                'assigned' => $ticket->assigned->name
+            ], 200);
+
+
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
     public function selesai(Request $request)
     {
         
@@ -155,6 +223,7 @@ class TicketController extends Controller
 
             $startInput = $request->query('start_date');
             $endInput = $request->query('end_date');
+            $statusInput = $request->query('status');
 
             if (!empty($startInput) && !empty($endInput)) {
                 \Log::info('Start Date: ' . $startInput);
@@ -165,6 +234,17 @@ class TicketController extends Controller
                     $end = Carbon::parse($endInput)->endOfDay();
 
                     $tickets = $tickets->whereBetween('created_at', [$start, $end]);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
+                }
+            }
+
+            if(!empty($statusInput)){
+                \Log::info('status: ' . $statusInput);
+
+                try {
+
+                    $tickets = $tickets->where('status',$statusInput);
                 } catch (\Exception $e) {
                     \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
                 }
@@ -184,7 +264,143 @@ class TicketController extends Controller
                             title="Lihat">
                             <i class="ri-sm ri-eye-line"></i>
                         </a>
+                    ';
+                })
 
+                ->addColumn('requester_name', function ($ticket) {
+                return optional($ticket->requester)->name ?? '-';
+                })
+                ->addColumn('dept_name', function ($ticket) {
+                return optional($ticket->dept)->name ?? '-';
+                })
+                ->addColumn('assigned_name', function ($ticket) {
+                return optional($ticket->assigned)->name ?? '-';
+                })
+                ->editColumn('created_at', function($ticket){
+                    return $ticket->created_at->format('d-m-Y H:i');
+                })
+                ->editColumn('updated_at', function($ticket){
+                    return $ticket->updated_at->format('d-m-Y H:i');
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getSingleTicketSaya($id)
+    {
+        $ticket = Ticket::with(['requester', 'dept','attachmentsOpen','attachmentsClose'])->findOrFail($id);
+
+        return response()->json([
+            'id' => $ticket->id,
+            'ticket_number' => $ticket->ticket_number,
+            'title' => $ticket->title,
+            'description' => $ticket->description,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'created_at' => $ticket->created_at->format('d-m-Y H:i'),
+            'requester_name' => optional($ticket->requester)->name,
+            'department_name' => optional($ticket->dept)->name,
+            'attachments_open' => $ticket->attachmentsOpen->map(function ($a) {
+                return [
+                    'file_path' => asset('/storage/'.$a->file_path),
+                    'type' => $a->type,
+                ];
+            }),
+            'attachments_close' => $ticket->attachmentsClose->map(function ($a) {
+                return [
+                    'file_path' => asset('/storage/'.$a->file_path),
+                    'type' => $a->type,
+                ];
+            })
+        ]);
+    }
+
+    public function getDataTiketDept(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $tickets = Ticket::query()->where('department_id',$user->department_id);
+            $head = Department::where('head_id',$user->id)->count();
+
+            $startInput = $request->query('start_date');
+            $endInput = $request->query('end_date');
+            $statusInput = $request->query('status');
+
+            if (!empty($startInput) && !empty($endInput)) {
+                try {
+                    $start = Carbon::parse($startInput)->startOfDay();
+                    $end = Carbon::parse($endInput)->endOfDay();
+
+                    $tickets = $tickets->whereBetween('created_at', [$start, $end]);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
+                }
+            }
+
+            if(!empty($statusInput)){
+                try {
+
+                    $tickets = $tickets->where('status',$statusInput);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
+                }
+            }
+
+
+            return DataTables::of($tickets)
+                ->addIndexColumn()
+                ->addColumn('action', function ($ticket) use($head) {
+                    $isOpen = $ticket->status === 'open' ? '' : 'disabled';
+                    $isHead = $head > 0 ? '' : 'disabled';
+                     return '
+                        <button href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-info btn-view" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Lihat" 
+                            title="Lihat" >
+                            <i class="ri-sm ri-eye-line"></i>
+                        </button>
+
+                        <button href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-primary "'. $isOpen .'" btn-progress" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Delegasikan" 
+                            title="Delegasikan" disabled>
+                            <i class="ri-sm ri-send-plane-line"></i>
+                        </button>
+
+                        <a href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-primary"'. $isHead .'" btn-delegasi" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Delegasikan" 
+                            title="Delegasikan">
+                            <i class="ri-sm ri-send-plane-line"></i>
+                        </a>
+                        <a href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Delegasikan" 
+                            title="Delegasikan">
+                            <i class="ri-sm ri-send-plane-line"></i>
+                        </a>
+                        <a href="javascript:void(0)" 
+                            class="btn btn-sm btn-outline-primary  btn-delegasi" 
+                            data-id="'.$ticket->id.'" 
+                            data-bs-toggle="popover" 
+                            data-bs-content="Delegasikan" 
+                            title="Delegasikan">
+                            <i class="ri-sm ri-send-plane-line"></i>
+                        </a>
                         <a href="javascript:void(0)" 
                             class="btn btn-sm btn-outline-primary  btn-delegasi" 
                             data-id="'.$ticket->id.'" 
@@ -221,7 +437,7 @@ class TicketController extends Controller
         }
     }
 
-    public function getSingleTicketSaya($id)
+    public function getSingleTicketDept($id)
     {
         $ticket = Ticket::with(['requester', 'dept','attachmentsOpen','attachmentsClose'])->findOrFail($id);
 
