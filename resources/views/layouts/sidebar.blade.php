@@ -20,6 +20,7 @@
 
           <ul class="child-menu" style="{{ request()->is('preventive*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('preventive/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/create">Buat Jadwal</a></li>
+            <li class="full-click {{ request()->is('preventive/do/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/do/create">Tugas Saya</a></li>
           </ul>
         </li>
         <li>

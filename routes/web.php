@@ -39,8 +39,8 @@ Route::post('/ticketing/eskalasi', [TicketController::class, 'escalate']);
 Route::post('/ticketing/selesai', [TicketController::class, 'selesai']);
 Route::resource('/ticketing',TicketController::class)->middleware('auth');
 
-Route::get('/ajax/get-equipment-by-rooms', [PreventiveTaskController::class, 'getEquipmentByRooms'])
-    ->name('ajax.getEquipmentByRooms');
+Route::get('/ajax/get-equipment-by-rooms', [PreventiveTaskController::class, 'getEquipmentByRooms'])->name('ajax.getEquipmentByRooms');
+Route::get('/preventive/do/create',[PreventiveTaskController::class, 'createPreventive']);
 Route::resource('/preventive',PreventiveTaskController::class);
 
 

@@ -34,6 +34,21 @@ class PreventiveTaskController extends Controller
         ]);
     }
 
+    public function createPreventive()
+    {
+       $tasks = PreventiveTask::with(['room', 'equipment'])
+       ->where(function ($q) {
+        $q->where('executor_id', auth()->id())
+        ->orWhereNull('executor_id'); 
+       })
+       ->whereDate('start_date', '<=', now())
+       ->whereDate('end_date', '>=', now())
+       ->whereIn('status', ['pending', 'in_progress'])
+       ->orderBy('start_date')
+       ->get();
+
+        return view('pages.preventive.create-preventive', compact('tasks'));
+    }
     /**
      * Store a newly created resource in storage.
      */
