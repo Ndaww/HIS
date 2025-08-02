@@ -1,38 +1,43 @@
 @extends('layouts.app')
-@section('title','Preventive - Tugas Preventif Saya')
+@section('title','Preventive - Form Tindakan Preventif')
 @section('main-content')
     <div class="header-breadcrumb">
-        <h2 id="page-title">Tugas Preventif Saya</h2>
-        <div class="breadcrumb" id="breadcrumb"><span>Preventive</span> / Tugas Preventif Saya</div>
+        <h2 id="page-title">Form Tindakan Preventif</h2>
+        <div class="breadcrumb" id="breadcrumb"><span>Preventive</span> / Form Tindakan Preventif</div>
     </div>
 
     <div class="card">
         <div class="card-header">
-            Tugas Preventif Saya
+            Form Tindakan Preventif
         </div>
         <div class="card-body">
-            @if($tasks->isEmpty())
-                <div class="alert alert-info">Tidak ada tugas preventif untuk Anda hari ini.</div>
-            @else
-                <div class="list-group">
-                    @foreach ($tasks as $task)
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong>{{ $task->equipment->name }}</strong> - {{ $task->equipment->serial_number }}<br>
-                                    <small>{{ $task->room->floor }} - {{ $task->room->name }}</small>
-                                </div>
-                                <div>
-                                    <span class="badge bg-{{ $task->status === 'pending' ? 'warning' : 'info' }}">
-                                        {{ ucfirst($task->status) }}
-                                    </span><br>
-                                    <small>{{ \Carbon\Carbon::parse($task->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($task->end_date)->format('d M') }}</small>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            @endif
+            <h4 class="mb-3">Form Tindakan Preventif</h4>
+
+            <div class="mb-3">
+                <strong>Ruangan:</strong> {{ $task->room->floor }} - {{ $task->room->name }} <br>
+                <strong>Equipment:</strong> {{ $task->equipment->name }} ({{ $task->equipment->serial_number }}) <br>
+                <strong>Periode:</strong> {{ \Carbon\Carbon::parse($task->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($task->end_date)->format('d M') }}
+            </div>
+
+            <form method="POST" action="{{ route('preventive-task.store-task', $task->id) }}">
+                @csrf
+
+                @foreach ($task->details as $detail)
+                {{-- @dd($detail->preventiveType->equipmentPreventive); --}}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <label>
+                                <input type="checkbox" name="actions[{{ $detail->id }}][status]" value="done"
+                                    {{ $detail->status === 'done' ? 'checked' : '' }}>
+                                <strong>{{ $detail->preventiveType->equipmentPreventive->name }}</strong>
+                            </label>
+                            <textarea class="form-control mt-2" name="actions[{{ $detail->id }}][note]" placeholder="Catatan (opsional)...">{{ $detail->note }}</textarea>
+                        </div>
+                    </div>
+                @endforeach
+
+                <button class="btn btn-primary">Simpan</button>
+            </form>
         </div>
         </div>
     </div>
@@ -116,7 +121,7 @@ $(document).ready(function () {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
-                            text: 'Jadwal berhasil dibuat.'
+                            text: 'Tugas berhasil disubmit.'
                         }).then(() => {
                             window.location.reload();
                         });
@@ -142,7 +147,8 @@ $(document).ready(function () {
     @if(session('success'))
         Swal.fire({
             icon: 'success',
-            title: 'Jadwal Berhasil Dibuat',
+            title: 'Berhasil'
+            text: '{{ session('success') }}'
         });
     @endif
     @if(session('error'))

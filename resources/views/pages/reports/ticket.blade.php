@@ -62,7 +62,7 @@
             </thead>
         </table>
         </div>
-        
+
     </div>
 
     {{-- modal view --}}
@@ -74,7 +74,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -160,7 +160,7 @@
                 let attachmentOpenHTML = '';
                 if (res.attachments_open && res.attachments_open.length > 0) {
                     attachmentOpenHTML += `<div class="mt-3"><strong>Lampiran (Open):</strong><div class="row g-2 mt-1">`;
-                    
+
                     for (let i = 0; i < res.attachments_open.length; i++) {
                         const item = res.attachments_open[i];
 
@@ -251,7 +251,7 @@
         });
     });
 
-    
+
 
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
     popoverTriggerList.forEach(el => {

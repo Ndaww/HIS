@@ -22,4 +22,9 @@ class EquipmentPreventiveType extends Model
         return $this->hasMany(PreventiveTaskDetail::class, 'preventive_type_id');
     }
 
+    public function equipmentPreventive()
+    {
+        return $this->belongsTo(MasterPreventive::class, 'preventive_type_id');
+    }
+
 }

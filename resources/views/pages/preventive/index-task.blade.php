@@ -16,7 +16,7 @@
             @else
                 <div class="list-group">
                     @foreach ($tasks as $task)
-                        <a href="#" class="list-group-item list-group-item-action">
+                        <a href="{{ route('preventive-task.task', $task->id) }}" class="list-group-item list-group-item-action">
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <strong>{{ $task->equipment->name }}</strong> - {{ $task->equipment->serial_number }}<br>
@@ -142,7 +142,8 @@ $(document).ready(function () {
     @if(session('success'))
         Swal.fire({
             icon: 'success',
-            title: 'Jadwal Berhasil Dibuat',
+            title: 'Berhasil',
+            text: '{{ session('success') }}'
         });
     @endif
     @if(session('error'))

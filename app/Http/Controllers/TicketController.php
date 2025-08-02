@@ -160,7 +160,7 @@ class TicketController extends Controller
 
     public function delegasi(Request $request)
     {
-        
+
         try {
 
             $ticket = Ticket::findOrFail($request->id);
@@ -197,7 +197,7 @@ class TicketController extends Controller
 
     public function progress(Request $request)
     {
-        
+
         try {
 
             $ticket = Ticket::findOrFail($request->id);
@@ -234,9 +234,9 @@ class TicketController extends Controller
 
     public function pending(Request $request)
     {
-        
+
         try {
-            
+
             $ticket = Ticket::findOrFail($request->id);
             $ticket->update([
                 'status' => 'pending',
@@ -271,13 +271,13 @@ class TicketController extends Controller
 
     public function solve(Request $request)
     {
-        
+
         try {
             $request->validate([
                 'keterangan' => 'nullable|string|max:1000',
                 'attachments.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
-            
+
             $ticket = Ticket::findOrFail($request->id);
             $ticket->update([
                 'status' => 'solved',
@@ -323,7 +323,7 @@ class TicketController extends Controller
 
     public function escalate(Request $request)
     {
-        
+
         try {
 
             $ticket = Ticket::findOrFail($request->id);
@@ -371,7 +371,7 @@ class TicketController extends Controller
 
     public function selesai(Request $request)
     {
-        
+
         try {
             $ticket = Ticket::where('id',$request->id)->get()[0];
             Ticket::where('id',$request->id)->update([
@@ -431,11 +431,11 @@ class TicketController extends Controller
                 ->addColumn('action', function ($ticket) {
                     // $isDisabled = $ticket->status !== 'closed' ? 'disabled' : '';
                      return '
-                        <a href="javascript:void(0)" 
-                            class="btn btn-sm btn-outline-info btn-view" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Lihat" 
+                        <a href="javascript:void(0)"
+                            class="btn btn-sm btn-outline-info btn-view"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Lihat"
                             title="Lihat">
                             <i class="ri-sm ri-eye-line"></i>
                         </a>
@@ -538,47 +538,47 @@ class TicketController extends Controller
                     $isMyTicket = in_array($ticket->id, $myTicket) ? '' : 'disabled';
 
                      return '
-                        <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-info btn-view" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Lihat" 
+                        <button href="javascript:void(0)"
+                            class="btn btn-sm btn-info btn-view"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Lihat"
                             title="Lihat" >
                             <i class="ri-sm ri-eye-line"></i>
                         </button>
 
-                        <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-primary btn-delegasi" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Delegasikan" 
+                        <button href="javascript:void(0)"
+                            class="btn btn-sm btn-primary btn-delegasi"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Delegasikan"
                             title="Delegasikan" '."$isHead".' >
                             <i class="ri-sm ri-send-plane-line"></i>
                         </button>
 
-                        <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-danger btn-pending" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Pending" 
+                        <button href="javascript:void(0)"
+                            class="btn btn-sm btn-danger btn-pending"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Pending"
                             title="Pending" '." $isMyTicket ".'>
                             <i class="ri-sm ri-compass-4-line"></i>
                         </button>
 
-                        <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-success btn-solve" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Solved" 
+                        <button href="javascript:void(0)"
+                            class="btn btn-sm btn-success btn-solve"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Solved"
                             title="Solved" '." $isMyTicket ".'>
                             <i class="ri-sm ri-check-line"></i>
                         </button>
 
-                        <button href="javascript:void(0)" 
-                            class="btn btn-sm btn-warning btn-eskalasi" 
-                            data-id="'.$ticket->id.'" 
-                            data-bs-toggle="popover" 
-                            data-bs-content="Eskalasi" 
+                        <button href="javascript:void(0)"
+                            class="btn btn-sm btn-warning btn-eskalasi"
+                            data-id="'.$ticket->id.'"
+                            data-bs-toggle="popover"
+                            data-bs-content="Eskalasi"
                             title="Eskalasi" '." $isMyTicket ".'>
                             <i class="ri-sm ri-exchange-2-line"></i>
                         </button>
