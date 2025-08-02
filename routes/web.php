@@ -4,6 +4,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\WhatsappController;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\TelegramTicketNotification;
 use Illuminate\Support\Facades\Notification;
@@ -60,3 +61,8 @@ Route::get('/reports/api/ticket/{id}', [ReportController::class, 'getSingleRepor
 Route::get('/reports/preventive', [ReportController::class, 'indexPreventive']);
 Route::get('/reports/preventive/get', [ReportController::class, 'getAllPreventive'])->name('list-report-preventive');
 
+
+
+
+// WA
+Route::get('/kirim-whatsapp', [WhatsappController::class, 'kirim']);
