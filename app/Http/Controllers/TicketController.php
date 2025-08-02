@@ -12,7 +12,9 @@ use App\Models\User;
 use App\Notifications\TelegramTicketNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Session;
 // use Illuminate\Notifications\Notification;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -96,22 +98,37 @@ class TicketController extends Controller
                 }
             }
 
-            $ticket->load(['requester', 'dept']);
+            // $ticket->load(['requester', 'dept.head','assigned']);
             // \Log::info('Ticket created', ['ticket' => $ticket->toArray()]);
             // Notification::route('telegram', env('TELEGRAM_CHAT_ID'))->notify(new TelegramTicketNotification($ticket));
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                // Log::info('Kirim Telegram', ['ticket' => $ticket->toArray()]);
-                // Log::info(env('TELEGRAM_CHAT_ID'));
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     Log::info('Kirim Telegram', ['ticket' => $ticket->toArray()]);
+            //     Log::info(env('TELEGRAM_CHAT_ID'));
 
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             return response()->json([
                 'message' => 'Tiket berhasil dikirim!',
@@ -172,16 +189,31 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept','assigned']);
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                \Log::info($ticket);
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     \Log::info($ticket);
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             return response()->json([
                 'message' => 'Tiket Berhasil Didelegasikan!',
@@ -209,16 +241,31 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept','assigned']);
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                \Log::info($ticket);
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     \Log::info($ticket);
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             return response()->json([
                 'message' => 'Tiket Diproses!',
@@ -244,18 +291,32 @@ class TicketController extends Controller
                 'pending_reason' => $request->reason
             ]);
 
-            $ticket->load(['requester', 'dept','assigned']);
+            // $ticket->load(['requester', 'dept','assigned']);
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     \Log::info($ticket);
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                \Log::info($ticket);
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             return response()->json([
                 'message' => 'Tiket Dipending!',
@@ -296,18 +357,33 @@ class TicketController extends Controller
                 }
             }
 
-            $ticket->load(['requester', 'dept','assigned']);
+            // $ticket->load(['requester', 'dept','assigned']);
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                \Log::info($ticket);
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     \Log::info($ticket);
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             return response()->json([
                 'message' => 'Tiket Dipending!',
@@ -333,18 +409,33 @@ class TicketController extends Controller
                 'assigned_employee_id' => $request->escalated_employee
             ]);
 
-            $ticket->load(['requester', 'dept','assigned']);
+            // $ticket->load(['requester', 'dept','assigned']);
 
-            try {
-                Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-                ->notify(new TelegramTicketNotification($ticket));
-            } catch (\Throwable $e) {
-                \Log::info($ticket);
-                return response()->json([
-                    'message' => 'Gagal kirim notifikasi Telegram',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+            // try {
+            //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+            //     ->notify(new TelegramTicketNotification($ticket));
+            // } catch (\Throwable $e) {
+            //     \Log::info($ticket);
+            //     return response()->json([
+            //         'message' => 'Gagal kirim notifikasi Telegram',
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
+            ]);
 
             TicketSubstitution::create([
                 'ticket_id' => $request->id,
@@ -377,6 +468,21 @@ class TicketController extends Controller
             Ticket::where('id',$request->id)->update([
                 'status' => 'closed',
                 'updated_at' => now()
+            ]);
+
+            $ticket->load(['requester', 'dept.head','assigned']);
+
+            $message = $ticket->generateMessage();
+            $response = Http::withHeaders([
+                'id' => Session::get('zawa_id'),
+                'session-id' => Session::get('zawa_session_id'),
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-zawa.azickri.com/message',[
+                'phone' => '6287889643945',
+                // 'group' => '6287889643945',
+                'type' => 'text',
+                'text' => $message,
             ]);
 
             return response()->json([

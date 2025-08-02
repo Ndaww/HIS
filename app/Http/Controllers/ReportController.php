@@ -16,7 +16,7 @@ class ReportController extends Controller
     public function indexTicket()
     {
         $depts = Department::all();
-        return view ('pages.reports.Ticket',[
+        return view ('pages.reports.ticket',[
             'depts' => $depts
         ]);
     }

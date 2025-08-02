@@ -124,13 +124,12 @@
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
-                    Swal.showLoading(); // Optional loading indicator
+                    Swal.showLoading();
                 },
                 success: function (response) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        // text: 'Tiket berhasil dikirim.',
                         html: `<p>Tiket Berhasil Dikirim </p> <p><strong>Nomor Tiket:</strong> ${response.ticket_number}</p>`,
                         confirmButtonText: 'OK'
                     }).then(() => {

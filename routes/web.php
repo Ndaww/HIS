@@ -7,7 +7,10 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\WhatsappController;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\TelegramTicketNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Session;
 
 Route::get('/', function () {
     return view('layouts.app');
@@ -66,3 +69,48 @@ Route::get('/reports/preventive/get', [ReportController::class, 'getAllPreventiv
 
 // WA
 Route::get('/kirim-whatsapp', [WhatsappController::class, 'kirim']);
+
+Route::get('/zawa/qr', function () {
+    $response = Http::post('https://api-zawa.azickri.com/authorize');
+
+    $data = $response->json();
+    // dd($data->id);
+
+    $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
+    
+    $response = Http::withHeaders([
+        'id' => $data['id'],
+        'session-id' => $data['sessionId'],
+        'Accept' => '*/*',
+    ])->get('https://api-zawa.azickri.com/qrcode');
+    $qr = $response->json();
+
+    Session::put('zawa_id', $data['id']);
+    Session::put('zawa_session_id', $data['sessionId']);
+    Session::put('zawa_qr', $qr['qrcode']);
+    
+
+    return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
+});
+
+Route::get('/zawa/qr/send', function() {
+    $response = Http::withHeaders([
+        'id' => Session::get('zawa_id'),
+        'session-id' => Session::get('zawa_session_id'),
+        'Accept' => '*/*',
+        'Content-Type' => 'application/json',
+    ])->post('https://api-zawa.azickri.com/message',[
+        'phone' => '6287889643945',
+        // 'group' => '6287889643945',
+        'type' => 'text',
+        'text' => 'Halo dari Zawa 👋
+        *ASKDNAKJSDNAS*
+        /ANSDJNASJKDN/
+        _ASNKDJNASJDN_
+        ASDKJNASKDJNASJ',
+    ]);
+ $data = $response->json();
+
+ return $data;
+
+});
