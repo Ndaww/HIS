@@ -36,10 +36,15 @@ class TicketController extends Controller
     public function indexMyDept()
     {
         $tickets = Ticket::all();
+        $assigneds = User::where('department_id',auth()->user()->dept->id)
+        ->where('id', '!=', auth()->user()->id)
+        ->get();
+        // dd(auth()->user()->dept->id,$assigneds);
         // dd($tickets);
 
         return view ('pages.ticketing.indexMyDept2',[
-            'tickets' => $tickets
+            'tickets' => $tickets,
+            'assigneds' => $assigneds,
         ]);
     }
 
@@ -614,6 +619,7 @@ class TicketController extends Controller
             $startInput = $request->query('start_date');
             $endInput = $request->query('end_date');
             $statusInput = $request->query('status');
+            $assignedInput = $request->query('assigned_employee_id');
 
             if (!empty($startInput) && !empty($endInput)) {
                 try {
@@ -631,7 +637,16 @@ class TicketController extends Controller
 
                     $tickets = $tickets->where('status',$statusInput);
                 } catch (\Exception $e) {
-                    \Log::error('Gagal parsing tanggal:', [$e->getMessage()]);
+                    \Log::error('Gagal pilih status:', [$e->getMessage()]);
+                }
+            }
+
+            if(!empty($assignedInput)){
+                try {
+
+                    $tickets = $tickets->where('assigned_employee_id',$assignedInput);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal pilih assigner:', [$e->getMessage()]);
                 }
             }
 
@@ -642,6 +657,13 @@ class TicketController extends Controller
                     $isOpen = $ticket->status === 'open' ? '' : 'disabled';
                     $isHead = $head > 0 && $ticket->status =='open' ? '' : 'disabled';
                     $isMyTicket = in_array($ticket->id, $myTicket) ? '' : 'disabled';
+                    $isMyTicket2 = in_array($ticket->status, ['solved','closed'])? '' : 'disabled';
+                    $solveClose = '';
+                    // kalo ticket gue
+                    if($isMyTicket > 0 ){
+                        // kalo udah solve & close tidak bisa eskalasi
+                        $solveClose = in_array($ticket->status, ['solved','closed'])? 'disabled' : '';
+                    }
 
                      return '
                         <button href="javascript:void(0)"
@@ -685,7 +707,7 @@ class TicketController extends Controller
                             data-id="'.$ticket->id.'"
                             data-bs-toggle="popover"
                             data-bs-content="Eskalasi"
-                            title="Eskalasi" '." $isMyTicket ".'>
+                            title="Eskalasi" '." $isMyTicket $solveClose ".'>
                             <i class="ri-sm ri-exchange-2-line"></i>
                         </button>
                     ';

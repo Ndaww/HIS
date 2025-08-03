@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('master_rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); 
-            $table->string('floor'); 
+            $table->string('name');
+            $table->string('floor');
+            $table->string('class');
             $table->timestamps();
         });
     }

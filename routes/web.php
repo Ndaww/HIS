@@ -68,7 +68,7 @@ Route::get('/reports/preventive/get', [ReportController::class, 'getAllPreventiv
 
 
 // WA
-Route::get('/kirim-whatsapp', [WhatsappController::class, 'kirim']);
+// Route::get('/kirim-whatsapp', [WhatsappController::class, 'kirim']);
 
 Route::get('/zawa/qr', function () {
     $response = Http::post('https://api-zawa.azickri.com/authorize');
@@ -77,7 +77,7 @@ Route::get('/zawa/qr', function () {
     // dd($data->id);
 
     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
-    
+
     $response = Http::withHeaders([
         'id' => $data['id'],
         'session-id' => $data['sessionId'],
@@ -88,7 +88,7 @@ Route::get('/zawa/qr', function () {
     Session::put('zawa_id', $data['id']);
     Session::put('zawa_session_id', $data['sessionId']);
     Session::put('zawa_qr', $qr['qrcode']);
-    
+
 
     return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
 });
@@ -103,9 +103,9 @@ Route::get('/zawa/qr/send', function() {
         'phone' => '6287889643945',
         // 'group' => '6287889643945',
         'type' => 'text',
-        'text' => 'Halo dari Zawa 👋
+        'text' => 'TES WA
         *ASKDNAKJSDNAS*
-        /ANSDJNASJKDN/
+        ~ANSDJNASJKDN~
         _ASNKDJNASJDN_
         ASDKJNASKDJNASJ',
     ]);

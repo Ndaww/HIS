@@ -13,6 +13,7 @@ use App\Models\TicketSubstitution;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 
@@ -69,7 +70,7 @@ class DatabaseSeeder extends Seeder
         // Buat 30 ticket
         $statuses = ['open', 'in_progress', 'pending', 'solved', 'closed'];
         $priorities = ['low', 'medium', 'high'];
-        
+
         $users = User::all();
         $departments = Department::all();
 
@@ -90,9 +91,9 @@ class DatabaseSeeder extends Seeder
                 'title' => "Masalah #$i",
                 'description' => "Deskripsi masalah nomor $i",
                 'requester_id' => $users->random()->id,
-                'assigned_employee_id' => $users->random()->id,
+                // 'assigned_employee_id' => $users->random()->id,
                 'department_id' => $dept->id,
-                'status' => $statuses[array_rand($statuses)],
+                'status' => 'open',
                 'priority' => $priorities[array_rand($priorities)],
                 'created_at' => now()->subDays(rand(0, 10)),
                 'updated_at' => now(),
@@ -100,26 +101,28 @@ class DatabaseSeeder extends Seeder
         }
 
         // Buat 10 eskalasi
-        foreach ($tickets->take(10) as $ticket) {
-            $from = $users->random();
-            do {
-                $to = $users->random();
-            } while ($from->id === $to->id);
+        // foreach ($tickets->take(10) as $ticket) {
+        //     $from = $users->random();
+        //     do {
+        //         $to = $users->random();
+        //     } while ($from->id === $to->id);
 
-            TicketSubstitution::create([
-                'ticket_id' => $ticket->id,
-                'from_user_id' => $from->id,
-                'to_user_id' => $to->id,
-                'reason' => 'Pegawai sedang cuti',
-            ]);
-        }
+        //     TicketSubstitution::create([
+        //         'ticket_id' => $ticket->id,
+        //         'from_user_id' => $from->id,
+        //         'to_user_id' => $to->id,
+        //         'reason' => 'Pegawai sedang cuti',
+        //     ]);
+        // }
 
         // Master Room
+        $class = ['VVIP', 'VIP', 'KELAS 1', 'KELAS 2','KELAS 3'];
         foreach (range(1, 3) as $lantai) {
-            foreach (range(1, 10) as $no) {
+            foreach (range(1, 5) as $no) {
                 MasterRoom::create([
                     'name' => 'Ruangan ' . str_pad($no, 2, '0', STR_PAD_LEFT),
                     'floor' => 'Lantai ' . $lantai,
+                    'class' => $class[array_rand($class)],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -175,19 +178,21 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Mater Equipment 
+        // Mater Equipment
         // Master Equipments (10 per jenis)
         $roomIds = MasterRoom::pluck('id')->toArray();
-        foreach ($typeMap as $etype => $typeId) {
-            foreach (range(1, 10) as $i) {
-                MasterEquipment::create([
-                    'name' => $etype . ' ' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                    'serial_number' => Str::upper(Str::random(3)) . '-' . rand(10000,99999),
-                    'room_id' => $roomIds[array_rand($roomIds)],
-                    'equipment_type_id' => $typeId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+        foreach ($roomIds as $roomId) {
+            foreach ($typeMap as $etype => $typeId) {
+                foreach (range(1, 3) as $i) {
+                    MasterEquipment::create([
+                        'name' => $etype . ' ' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                        'serial_number' => Str::upper(Str::random(3)) . '-' . rand(10000,99999),
+                        'room_id' => $roomId,
+                        'equipment_type_id' => $typeId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
         }
     }

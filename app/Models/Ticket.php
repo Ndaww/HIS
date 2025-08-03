@@ -58,7 +58,7 @@ class Ticket extends Model
 
             case 'pending':
                 $header = "*[Pending by : {$this->assigned->name}]*";
-                $pending = "*[ Alasan Pending ] \n{$this->pending_reason}*";
+                $pending = "*[ Alasan Pending ]* \n{$this->pending_reason}";
                 break;
 
             case 'escalated':
@@ -70,7 +70,7 @@ class Ticket extends Model
                 break;
         }
 
-        $message = 
+        $message =
 <<<MSG
 $header
 *Title : {$this->title}*
@@ -81,8 +81,8 @@ Message     : {$this->description}
 
 $pending
 
-*http://127.0.0.1:8000/ticketing/{$this->id}/show*
-*https://thinksys.my.id/ticketing/{$this->id}/show*
+_http://127.0.0.1:8000/ticketing/{$this->id}/show_
+_https://thinksys.my.id/ticketing/{$this->id}/show_
 MSG;
 
         return $message;

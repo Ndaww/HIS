@@ -6,7 +6,7 @@
     </div>
 
     <div class="card">
-        <div class="card-header">Daftar Tiket</div>
+        <div class="card-header">Daftar Tiket -  {{ auth()->user()->dept->name }}</div>
         <div class="card-body">
             {{-- @dd(auth()->user()->department_id) --}}
             <div class="row mb-3">
@@ -22,14 +22,25 @@
                     <label for="status">Status</label>
                     <select class="form-control" name="status" id="status">
                         <option value=""> -- Pilih Status -- </option>
-                        <option value="open"> Open </option>
-                        <option value="in_progress"> In Progress </option>
-                        <option value="pending"> Pending </option>
-                        <option value="solved"> Solved </option>
-                        <option value="closed"> Closed </option>
+                        <option class="text-capitalize" value="open"> Open </option>
+                        <option class="text-capitalize" value="in_progress"> In Progress </option>
+                        <option class="text-capitalize" value="pending"> Pending </option>
+                        <option class="text-capitalize" value="solved"> Solved </option>
+                        <option class="text-capitalize" value="closed"> Closed </option>
                     </select>
                 </div>
-                <div class="col-md-3 align-self-end">
+                <div class="col-md-3">
+                    <label for="assigned_employee_id">Ditugaskan ke :</label>
+                    <select class="form-control" name="assigned_employee_id" id="assigned_employee_id">
+                        <option value=""> -- Pilih Pekerja -- </option>
+                        <option value="">Belum Ditugaskan</option>
+                        <option class="text-capitalize" value="{{auth()->user()->id}}">{{ auth()->user()->name }} ( Saya ) </option>
+                        @foreach ($assigneds as $row)
+                            <option class="text-capitalize" value="{{$row->id}}">{{ $row->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 align-self-end mt-3">
                     <button id="filter" class="btn btn-primary"> <i class="ri ri-filter-line"></i>Filter</button>
                     <button id="reset" class="btn btn-secondary"><i class="ri ri-refresh-line"></i> Reset</button>
                 </div>
@@ -53,7 +64,7 @@
             </thead>
         </table>
         </div>
-        
+
     </div>
 
     {{-- modal view --}}
@@ -65,7 +76,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -83,12 +94,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             </div>
         </div>
     </div>
-    
+
     {{-- modal Pending --}}
     <div class="modal fade" id="myModalPending" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -98,7 +109,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             </div>
         </div>
@@ -113,7 +124,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             </div>
         </div>
@@ -128,7 +139,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
+
             </div>
             </div>
         </div>
@@ -150,6 +161,7 @@
                     d.start_date = $('#start_date').val();
                     d.end_date = $('#end_date').val();
                     d.status = $('#status').val();
+                    d.assigned_employee_id = $('#assigned_employee_id').val();
                 }
             },
             lengthMenu: [10, 25, 50, 100, -1],
@@ -174,9 +186,9 @@
                 { data: 'ticket_number' },
                 { data: 'title' },
                 { data: 'description' },
-                { data: 'requester_name', name: 'requester.name' },
-                { data: 'dept_name', name: 'dept.name' },
-                { data: 'assigned_name', name: 'assigned.name' },
+                { data: 'requester_name', name: 'requester_id'},
+                { data: 'dept_name', name: 'department_id' },
+                { data: 'assigned_name', name: 'assigned_employee_id'},
                 { data: 'status' },
                 { data: 'priority' },
                 { data: 'created_at' },
@@ -311,7 +323,7 @@
 
             const attachmentOpenHTML = generateAttachments(res.attachments_open, 'Open');
             const attachmentCloseHTML = generateAttachments(res.attachments_close, 'Close');
-            
+
             let dynamicFields = '';
             if (mode === 'delegasi') {
                 dynamicFields = generateEmployeeSelect(res.employees);
@@ -469,7 +481,7 @@
         });
     });
 
-   
+
     // button tambah lampiran solve
     let fileInputSolveCount = 0;
     $(document).on('click', '#add-file-input-solve', function () {
