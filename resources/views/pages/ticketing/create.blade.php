@@ -104,8 +104,6 @@
             Swal.fire({
                         icon: 'warning',
                         title: 'Maksimal 3 File!',
-                        // text: 'Tiket berhasil dikirim.',
-                        // html: `<p>Tiket Berhasil Dikirim </p> <p><strong>Nomor Tiket:</strong> ${response.ticket_number}</p>`,
                         confirmButtonText: 'OK'
                     });
         }
@@ -113,7 +111,7 @@
 
     $(document).ready(function () {
         $('#ticket-form').on('submit', function (e) {
-            e.preventDefault(); // Cegah reload
+            e.preventDefault();
 
             let formData = new FormData(this);
 
@@ -134,7 +132,7 @@
                         confirmButtonText: 'OK'
                     }).then(() => {
                         $('#ticket-form')[0].reset();
-                        $('#file-wrapper').empty(); // Kosongkan input file
+                        $('#file-wrapper').empty();
                     });
                 },
                 error: function (xhr) {
