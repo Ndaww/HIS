@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PksController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketController;
@@ -52,6 +53,15 @@ Route::post('/preventive-task/task/{id}/submit', [PreventiveTaskController::clas
 Route::get('/preventive/history', [PreventiveTaskController::class, 'history'])->name('preventive-task.history');
 Route::get('/preventive-task/history/data', [PreventiveTaskController::class, 'historyData'])->name('preventive-task.history.data');
 Route::resource('/preventive',PreventiveTaskController::class);
+
+// PKS
+Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
+Route::get('/pks/pengajuan-saya', [PksController::class, 'mypks'])->name('pks.pengajuan-saya');
+Route::post('/pks/resubmit', [PksController::class, 'resubmit'])->name('pks.resubmit');
+Route::post('/pks/verify', [PksController::class, 'verify'])->name('pks.verify');
+Route::post('/pks/reject', [PksController::class, 'reject'])->name('pks.reject');
+Route::resource('/pks',PksController::class);
+// Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
 
 
 // Reports
@@ -114,3 +124,5 @@ Route::get('/zawa/qr/send', function() {
  return $data;
 
 });
+
+

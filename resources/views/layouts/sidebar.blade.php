@@ -25,6 +25,17 @@
           </ul>
         </li>
         <li>
+          <div class="parent {{request()->is('pks*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-shake-hands-line"></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('pks*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('pks/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/create">Buat Pengajuan</a></li>
+            <li class="full-click {{ request()->is('pks/pengajuan-saya') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/pengajuan-saya">Pengajuan Saya</a></li>
+            <li class="full-click {{ request()->is('pks/verify') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/verify">Verifikasi PKS</a></li>
+          </ul>
+        </li>
+        <li>
           <div class="parent {{request()->is('reports*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-folder-5-line"></i> Laporan <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>

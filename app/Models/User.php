@@ -50,4 +50,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    public function pks()
+    {
+        return $this->hasMany(Pks::class);
+    }
+
 }
