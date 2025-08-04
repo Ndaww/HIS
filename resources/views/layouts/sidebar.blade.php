@@ -3,6 +3,15 @@
       <ul>
         <li class="menu-item"><i class="ri-sm ri-dashboard-line"></i> Dashboard</li>
         <li>
+          <div class="parent {{request()->is('master*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-book-line"></i> Master <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('master*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('master/patients*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/patients">Master Pasien</a></li>
+          </ul>
+        </li>
+        <li>
           <div class="parent {{request()->is('ticketing*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-ticket-line"></i> Ticketing <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
@@ -34,6 +43,17 @@
             <li class="full-click {{ request()->is('pks/pengajuan-saya') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/pengajuan-saya">Pengajuan Saya</a></li>
             <li class="full-click {{ request()->is('pks/verify') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/verify">Data PKS (Legal)</a></li>
             <li class="full-click {{ request()->is('pks/approval') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/approval">Approval Direksi</a></li>
+          </ul>
+        </li>
+        <li>
+          <div class="parent {{request()->is('kamar-kosong*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-hotel-bed-line"></i> Kamar Kosong <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('kamar-kosong*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('kamar-kosong/bookings*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/kamar-kosong/bookings">Booking Kamar</a></li>
+            <li class="full-click {{ request()->is('kamar-kosong/validasi') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/kamar-kosong/validasi">Validasi GA</a></li>
+            <li class="full-click {{ request()->is('kamar-kosong/konfirmasi') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/kamar-kosong/konfirmasi">Konfirmasi Perawat</a></li>
           </ul>
         </li>
         <li>

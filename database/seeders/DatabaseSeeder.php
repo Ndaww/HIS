@@ -33,9 +33,12 @@ class DatabaseSeeder extends Seeder
 
         // Buat Department
         $departments = collect([
-            Department::create(['name' => 'IT']),
-            Department::create(['name' => 'HRD']),
-            Department::create(['name' => 'Finance']),
+            Department::create(['name' => 'IT','head_id' => 2]),
+            Department::create(['name' => 'HRD', 'head_id' => 3]),
+            Department::create(['name' => 'Finance', 'head_id' => 4]),
+            Department::create(['name' => 'Maintenance', 'head_id' => 5]),
+            Department::create(['name' => 'Perawat', 'head_id' => 6]),
+            Department::create(['name' => 'GA', 'head_id' => 7]),
         ]);
 
         // Buat 10 user
@@ -48,6 +51,13 @@ class DatabaseSeeder extends Seeder
             'department_id' => $departments->random()->id,
             'is_active' => true,
         ]);
+
+        User::create(['nik' => "000001",'password' => bcrypt(1234),'name' => "Atasan IT",'email' => "atasanit@example.com",'phone' => "087889643945",'department_id' => 1,'is_active' => true,]);
+        User::create(['nik' => "000002",'password' => bcrypt(1234),'name' => "Atasan HRD",'email' => "atasanhrd@example.com",'phone' => "087889643945",'department_id' => 2,'is_active' => true,]);
+        User::create(['nik' => "000003",'password' => bcrypt(1234),'name' => "Atasan Finance",'email' => "atasanfinance@example.com",'phone' => "087889643945",'department_id' => 3,'is_active' => true,]);
+        User::create(['nik' => "000004",'password' => bcrypt(1234),'name' => "Atasan Maintenance",'email' => "atasanmaintenance@example.com",'phone' => "087889643945",'department_id' => 4,'is_active' => true,]);
+        User::create(['nik' => "000005",'password' => bcrypt(1234),'name' => "Atasan Perawat",'email' => "atasanperawat@example.com",'phone' => "087889643945",'department_id' => 5,'is_active' => true,]);
+        User::create(['nik' => "000006",'password' => bcrypt(1234),'name' => "Atasan GA",'email' => "atasanga@example.com",'phone' => "087889643945",'department_id' => 6,'is_active' => true,]);
         $users = collect();
         for ($i = 1; $i <= 10; $i++) {
             $users->push(User::create([
@@ -117,12 +127,25 @@ class DatabaseSeeder extends Seeder
 
         // Master Room
         $class = ['VVIP', 'VIP', 'KELAS 1', 'KELAS 2','KELAS 3'];
-        foreach (range(1, 3) as $lantai) {
+        foreach (range(2, 3) as $lantai) {
             foreach (range(1, 5) as $no) {
                 MasterRoom::create([
                     'name' => 'Ruangan ' . str_pad($no, 2, '0', STR_PAD_LEFT),
                     'floor' => 'Lantai ' . $lantai,
                     'class' => $class[array_rand($class)],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        foreach (range(1, 1) as $lantai) {
+            foreach (range(1, 5) as $no) {
+                MasterRoom::create([
+                    'name' => 'Ruangan ' . str_pad($no, 2, '0', STR_PAD_LEFT),
+                    'floor' => 'Lantai ' . $lantai,
+                    'class' => $class[array_rand($class)],
+                    'status' => 'preventive',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

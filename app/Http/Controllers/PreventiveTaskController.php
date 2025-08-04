@@ -28,7 +28,7 @@ class PreventiveTaskController extends Controller
      */
     public function create()
     {
-        $rooms = MasterRoom::all();
+        $rooms = MasterRoom::where('status','preventive')->get();
         $equipments = MasterEquipment::all();
         return view('pages.preventive.create',[
             'rooms'=> $rooms,
@@ -149,6 +149,7 @@ class PreventiveTaskController extends Controller
         if ($task->details->every(fn($d) => $d->status === 'done')) {
             $task->status = 'done';
             $task->performed_date = now();
+            MasterRoom::where('id',$task->room_id)->update(['status'=>'done preventive','preventive_done_at'=>now()]);
         } else {
             $task->status = 'in_progress';
         }

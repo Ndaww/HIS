@@ -16,6 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('floor');
             $table->string('class');
+            $table->enum('status', ['kosong' , 'preventive','done preventive','done ga' ,'terisi'])->default('kosong');
+            $table->date('preventive_done_at')->nullable();
+            $table->enum('ga_status', ['pending', 'ok', 'not_ok'])->default('pending');
+            $table->text('ga_notes')->nullable();
+            $table->timestamp('nurse_confirmed_at')->nullable();
             $table->timestamps();
         });
     }

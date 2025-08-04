@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MasterPatientController;
 use App\Http\Controllers\PksController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoomBookingController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\ValidasiGAController;
 use App\Http\Controllers\WhatsappController;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\TelegramTicketNotification;
@@ -87,6 +91,42 @@ Route::get('/reports/preventive/get', [ReportController::class, 'getAllPreventiv
 // PKS
 Route::get('/reports/pks', [ReportController::class, 'indexPKS']);
 Route::get('/reports/pks/get', [ReportController::class, 'getAllPKS'])->name('list-report-pks');
+
+
+// Registrasi pasien
+// Route::resource('/registrasi',MasterPatientController::class);
+// Route::get('/patients', [MasterPatientController::class, 'index'])->name('patients.index');
+// Route::get('/patients/data', [MasterPatientController::class, 'indexData'])->name('patients.index.data');
+// Route::post('/patients/checkout/{id}', [MasterPatientController::class, 'checkout'])->name('patients.checkout');
+
+// Route::get('/registrasi', [MasterPatientController::class, 'create']);
+// Route::post('/registrasi', [MasterPatientController::class, 'store'])->name('registrasi.store');
+
+// master pasien
+Route::get('/master/patients', [MasterPatientController::class, 'index'])->name('patients.index');
+Route::get('/master/patients/data', [MasterPatientController::class, 'data'])->name('patients.data');
+Route::resource('/master/patients', MasterPatientController::class);
+Route::put('/master/patients/{id}', [MasterPatientController::class, 'update'])->name('patients.update');
+
+// room booking 
+Route::get('/kamar-kosong/bookings', [RoomBookingController::class, 'index'])->name('bookings.index');
+Route::post('/bookings', [RoomBookingController::class, 'store'])->name('bookings.store');
+Route::get('/bookings/data', [RoomBookingController::class, 'data'])->name('bookings.data');
+Route::delete('/bookings/{id}', [RoomBookingController::class, 'cancel'])->name('bookings.cancel');
+Route::post('/bookings/{id}/checkout', [RoomBookingController::class, 'checkout'])->name('bookings.checkout');
+
+// validasi ga
+Route::get('/kamar-kosong/validasi', [ValidasiGAController::class, 'index'])->name('ga.rooms.index');
+Route::get('/kamar-kosong/validasi/datatable', [ValidasiGAController::class, 'datatable'])->name('ga.rooms.datatable');
+Route::post('/kamar-kosong/validasi/validasi', [ValidasiGAController::class, 'validateRoom'])->name('ga.rooms.validate');
+
+// konfirmasi perawat
+Route::get('/kamar-kosong/konfirmasi', [KonfirmasiPerawatController::class, 'index'])->name('nurse.confirm.index');
+Route::get('/kamar-kosong/konfirmasi/datatable', [KonfirmasiPerawatController::class, 'datatable'])->name('nurse.confirm.datatable');
+Route::post('/kamar-kosong/konfirmasi/store', [KonfirmasiPerawatController::class, 'store'])->name('nurse.confirm.store');
+
+
+
 
 
 
