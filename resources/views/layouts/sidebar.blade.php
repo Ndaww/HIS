@@ -26,7 +26,7 @@
         </li>
         <li>
           <div class="parent {{request()->is('pks*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
-         <i class="ri-sm "></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         <i class="ri-sm ri-shake-hands-line "></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 
           <ul class="child-menu" style="{{ request()->is('pks*') ? 'display: block;' : '' }}">

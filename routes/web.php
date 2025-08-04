@@ -68,6 +68,8 @@ Route::get('/pks/approval', [PksController::class, 'approval'])->name('pks.appro
 Route::post('/pks/approve', [PksController::class, 'approve'])->name('pks.approve')->middleware('auth');
 Route::post('/pks/reject-approval', [PksController::class, 'rejectApproval'])->name('pks.rejectApproval')->middleware('auth');
 Route::post('/pks/upload-final', [PksController::class, 'uploadFinal'])->name('pks.uploadFinal');
+Route::get('/pks/{id}', [PksController::class, 'edit']);
+Route::post('/pks/{id}/update', [PksController::class, 'update']);
 Route::resource('/pks',PksController::class);
 // Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
 

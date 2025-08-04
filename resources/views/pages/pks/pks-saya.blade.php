@@ -93,6 +93,44 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Edit -->
+    <div class="modal fade" id="modal-edit" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="edit-form" method="post" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Edit PKS</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+            <input type="hidden" name="pks_id">
+            <div class="mb-3">
+                <label for="nama" class="form-label">Nama</label>
+                <input type="text" class="form-control" name="partner_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipe" class="form-label">Tipe Kerjasama</label>
+                <input type="text" class="form-control" name="cooperation_type" required>
+            </div>
+            <div class="mb-3">
+                <label for="tujuan" class="form-label">Tujuan</label>
+                <textarea class="form-control" name="objective" rows="2" required></textarea>
+            </div>
+            <div id="initial-document-preview" class="mb-3">
+
+                <label for="initial_document" class="form-label">Upload Dokumen (Opsional)</label>
+                <input type="file" class="form-control" name="initial_document" disabled>
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+        </div>
+        </form>
+    </div>
+    </div>
 @endsection
 
 @section('js')
@@ -193,6 +231,61 @@
                     Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');
                 }
             });
+        });
+    });
+
+    // Modal Edit - Ambil data dan isi form
+    $('#modal-edit').on('show.bs.modal', function (e) {
+        const button = $(e.relatedTarget);
+        const id = button.data('id');
+
+        // Reset form dulu
+        $('#edit-form')[0].reset();
+
+        // Ambil data detail dari server
+        $.get(`/pks/${id}`, function(data) {
+            $('#edit-form input[name="pks_id"]').val(data.id);
+            $('#edit-form input[name="partner_name"]').val(data.partner_name);
+            $('#edit-form input[name="cooperation_type"]').val(data.cooperation_type);
+            $('#edit-form textarea[name="objective"]').val(data.objective);
+            $('#edit-form file[name="initial_document"]').val(data.initial_document);
+
+            // Tampilkan tombol jika file ada
+            if (data.initial_document) {
+                $('#initial-document-preview').html(`
+                    <a href="/storage/${data.initial_document}" target="_blank" class="btn btn-sm btn-info">
+                        <i class="ri ri-eye-line"></i> Lihat File
+                    </a>
+                `);
+            } else {
+                $('#initial-document-preview').html(`<span class="text-muted fst-italic">Belum ada file</span>`);
+            }
+
+
+            // Set action URL sesuai route update
+            $('#edit-form').attr('action', `/pks/${data.id}/update`);
+        });
+    });
+
+    // Submit Edit Form
+    $('#edit-form').on('submit', function(e) {
+        e.preventDefault();
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                $('#modal-edit').modal('hide');
+                Swal.fire('Berhasil!', res.message, 'success');
+                $('#pks-table').DataTable().ajax.reload();
+            },
+            error: function (xhr) {
+                Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');
+            }
         });
     });
 

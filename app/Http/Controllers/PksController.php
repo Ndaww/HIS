@@ -86,7 +86,7 @@ class PksController extends Controller
                             <button class="btn btn-danger btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-reject"><i class="ri ri-close-line"></i></button>
                         ';
                     }
-                    
+
                 })
                 ->rawColumns(['action','status'])
                 ->make(true);
@@ -149,7 +149,15 @@ class PksController extends Controller
                                 <i class="ri ri-upload-2-line"></i> Upload Ulang
                             </button>
                         ';
-                    } else {
+                    }
+                    else if(($row->status ==='submitted' || $row->status === 'rejected') && $row->initial_document != null ) {
+                        return '
+                            <button class="btn btn-warning btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-edit">
+                                <i class="ri ri-pencil-line"></i> Edit
+                            </button>
+                        ';
+                    }
+                    else {
                         return '';
                     }
                 })
@@ -253,9 +261,11 @@ class PksController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Pks $pks)
+    public function edit($id, Pks $pks)
     {
-        //
+        $pks = Pks::findOrFail($id);
+        return response()->json($pks);
+
     }
 
     /**
@@ -263,7 +273,11 @@ class PksController extends Controller
      */
     public function update(UpdatePksRequest $request, Pks $pks)
     {
-        //
+        Pks::where('id',$request->id)->update([
+            'partner_name' => $request->partner_name,
+            'cooperation_type' => $request->cooperation_type,
+            'objective' => $request->objective
+        ]);
     }
 
     /**
