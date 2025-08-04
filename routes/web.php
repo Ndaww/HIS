@@ -55,11 +55,19 @@ Route::get('/preventive-task/history/data', [PreventiveTaskController::class, 'h
 Route::resource('/preventive',PreventiveTaskController::class);
 
 // PKS
-Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
+// dept
 Route::get('/pks/pengajuan-saya', [PksController::class, 'mypks'])->name('pks.pengajuan-saya');
+// legal
+Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
 Route::post('/pks/resubmit', [PksController::class, 'resubmit'])->name('pks.resubmit');
 Route::post('/pks/verify', [PksController::class, 'verify'])->name('pks.verify');
+Route::post('/pks/reupload-draft', [PksController::class, 'reuploadDraft'])->name('pks.reupload.draft');
 Route::post('/pks/reject', [PksController::class, 'reject'])->name('pks.reject');
+// direksi
+Route::get('/pks/approval', [PksController::class, 'approval'])->name('pks.approval')->middleware('auth');
+Route::post('/pks/approve', [PksController::class, 'approve'])->name('pks.approve')->middleware('auth');
+Route::post('/pks/reject-approval', [PksController::class, 'rejectApproval'])->name('pks.rejectApproval')->middleware('auth');
+Route::post('/pks/upload-final', [PksController::class, 'uploadFinal'])->name('pks.uploadFinal');
 Route::resource('/pks',PksController::class);
 // Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
 
@@ -73,6 +81,10 @@ Route::get('/reports/api/ticket/{id}', [ReportController::class, 'getSingleRepor
 // Preventive
 Route::get('/reports/preventive', [ReportController::class, 'indexPreventive']);
 Route::get('/reports/preventive/get', [ReportController::class, 'getAllPreventive'])->name('list-report-preventive');
+
+// PKS
+Route::get('/reports/pks', [ReportController::class, 'indexPKS']);
+Route::get('/reports/pks/get', [ReportController::class, 'getAllPKS'])->name('list-report-pks');
 
 
 

@@ -12,7 +12,7 @@ class Pks extends Model
 
     protected $guarded = [];
 
-    public function requiester()
+    public function requester()
     {
         return $this->belongsTo(User::class);
     }

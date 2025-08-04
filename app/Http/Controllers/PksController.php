@@ -22,7 +22,12 @@ class PksController extends Controller
     public function indexSubmitted(Request $request)
     {
         if ($request->ajax()) {
-            $data = Pks::where('status', 'submitted')->latest();
+            $data = Pks::wherein('status', ['submitted','signed'])
+            ->orWhere(function($query) {
+                $query->where('status', 'rejected')
+                    ->whereNotNull('draft_document');
+            })
+            ->latest();
 
             if ($request->start_date) {
                 $data->whereDate('start_date', '>=', $request->start_date);
@@ -42,13 +47,48 @@ class PksController extends Controller
                 ->editColumn('created_at', function($ticket){
                     return $ticket->created_at->format('d-m-Y H:i');
                 })
-                ->addColumn('action', function ($row) {
+                ->editColumn('status', function ($ticket) {
+                    if($ticket->status === 'submitted') {
+                        $badge = 'bg-info';
+                    } else if ($ticket->status === 'verified'){
+                        $badge = 'bg-primary';
+                    } else if ($ticket->status === 'approved'){
+                        $badge = 'bg-success';
+                    } else if ($ticket->status === 'rejected'){
+                        $badge = 'bg-danger';
+                    } else if ($ticket->status === 'signed'){
+                        $badge = 'bg-secondary';
+                    } else {
+                        $badge = '';
+                    }
                     return '
-                        <button class="btn btn-success btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-verify"><i class="ri ri-check-line"></i></button>
-                        <button class="btn btn-danger btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-reject"><i class="ri ri-close-line"></i></button>
+                    <span class="badge '.$badge.'  text-capitalize">'.$ticket->status.'</span>
                     ';
                 })
-                ->rawColumns(['action'])
+                ->addColumn('action', function ($row) {
+                    if ($row->status === 'rejected' && $row->draft_document) {
+                        return '
+                            <button class="btn btn-warning btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-reupload-draft">
+                                <i class="ri ri-upload-2-line"></i> Upload Ulang Draft
+                            </button>
+                        ';
+                    } else if ($row->status === 'signed'  && $row->final_document == null) {
+                        return '<button class="btn btn-success btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-upload-final">
+                                    <i class="ri ri-upload-2-line"></i> Upload Final
+                                </button>';
+                    } else if ($row->status === 'signed' && $row->final_document != null) {
+                        return '<button class="btn-sm btn-outline-success btn-sm disabled" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-upload-final">
+                                    <i class="ri ri-check-double-line"></i> Selesai
+                                </button>';
+                     } else {
+                        return '
+                            <button class="btn btn-success btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-verify"><i class="ri ri-check-line"></i></button>
+                            <button class="btn btn-danger btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-reject"><i class="ri ri-close-line"></i></button>
+                        ';
+                    }
+                    
+                })
+                ->rawColumns(['action','status'])
                 ->make(true);
         }
 
@@ -103,14 +143,14 @@ class PksController extends Controller
                     ';
                 })
                 ->addColumn('action', function ($row) {
-                    if ($row->status === 'rejected') {
+                    if ($row->status === 'rejected' && $row->draft_document == null ) {
                         return '
                             <button class="btn btn-warning btn-sm" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#modal-resubmit">
                                 <i class="ri ri-upload-2-line"></i> Upload Ulang
                             </button>
                         ';
                     } else {
-                        return '-';
+                        return '';
                     }
                 })
                 ->rawColumns(['action','status'])
@@ -119,6 +159,43 @@ class PksController extends Controller
 
         return view('pages.pks.pks-saya');
     }
+
+    public function approval(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Pks::where('status', 'verified')->latest();
+
+            if ($request->start_date) {
+                $data->whereDate('start_date', '>=', $request->start_date);
+            }
+
+            if ($request->end_date) {
+                $data->whereDate('end_date', '<=', $request->end_date);
+            }
+
+            if ($request->status) {
+                $data->where('status', $request->status);
+            }
+
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->editColumn('start_date', fn($row) => Carbon::parse($row->start_date)->format('d-m-Y'))
+                ->editColumn('end_date', fn($row) => Carbon::parse($row->end_date)->format('d-m-Y'))
+                ->editColumn('created_at', fn($row) => $row->created_at->format('d-m-Y H:i'))
+                ->addColumn('draft', fn($row) => '<a href="/storage/' . $row->draft_document . '" target="_blank">Lihat Draft</a>')
+                ->addColumn('action', function ($row) {
+                    return '
+                        <button class="btn btn-success btn-sm" data-id="'.$row->id.'" onclick="approve('.$row->id.')"><i class="ri ri-check-line"></i> </button>
+                        <button class="btn btn-danger btn-sm" data-id="'.$row->id.'" data-bs-toggle="modal" data-bs-target="#modal-reject-approval"><i class="ri ri-close-line"></i> </button>
+                    ';
+                })
+                ->rawColumns(['draft', 'action'])
+                ->make(true);
+        }
+
+        return view('pages.pks.pks-approval');
+    }
+
 
 
     /**
@@ -256,11 +333,95 @@ class PksController extends Controller
         $pks->update([
             'initial_document' => $path,
             'status' => 'submitted',
-            'note' => null, // reset note dari reject
+            'note' => null,
         ]);
 
         return response()->json(['message' => 'Dokumen berhasil diupload ulang, dan status dikembalikan ke submitted.']);
     }
+
+    public function reuploadDraft(Request $request)
+    {
+        $request->validate([
+            'pks_id' => 'required|exists:pks,id',
+            'draft_document' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        $pks = Pks::where('id', $request->pks_id)
+                ->where('status', 'rejected')
+                ->whereNotNull('draft_document')
+                ->firstOrFail();
+
+        $path = $request->file('draft_document')->store('pks/draft', 'public');
+
+        $pks->update([
+            'draft_document' => $path,
+            'status' => 'verified',
+            'note' => null, // reset alasan penolakan
+        ]);
+
+        return response()->json(['message' => 'Draft berhasil diupload ulang dan dikirim ulang ke Direksi.']);
+    }
+
+
+    public function approve(Request $request)
+    {
+        $request->validate([
+            'pks_id' => 'required|exists:pks,id',
+        ]);
+
+        $pks = Pks::findOrFail($request->pks_id);
+
+        if ($pks->status !== 'verified') {
+            return response()->json(['message' => 'PKS ini tidak dalam status valid untuk disetujui.'], 400);
+        }
+
+        $pks->update(['status' => 'signed']);
+
+        return response()->json(['message' => 'PKS berhasil disetujui.']);
+    }
+
+    public function rejectApproval(Request $request)
+    {
+        $request->validate([
+            'pks_id' => 'required|exists:pks,id',
+            'note' => 'required|string|max:1000',
+        ]);
+
+        $pks = Pks::findOrFail($request->pks_id);
+
+        if ($pks->status !== 'verified') {
+            return response()->json(['message' => 'PKS ini tidak bisa ditolak karena statusnya bukan "verified".'], 400);
+        }
+
+        $pks->update([
+            'status' => 'rejected',
+            'note' => $request->note,
+        ]);
+
+        return response()->json(['message' => 'PKS berhasil ditolak.']);
+    }
+
+    public function uploadFinal(Request $request)
+    {
+        $request->validate([
+            'pks_id' => 'required|exists:pks,id',
+            'final_document' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        $pks = Pks::where('id', $request->pks_id)
+                ->where('status', 'signed')
+                ->firstOrFail();
+
+        $path = $request->file('final_document')->store('pks/final', 'public');
+
+        $pks->update([
+            'final_document' => $path,
+            'status' => 'signed',
+        ]);
+
+        return response()->json(['message' => 'Dokumen final berhasil diunggah dan PKS telah ditandatangani.']);
+    }
+
 
 
 

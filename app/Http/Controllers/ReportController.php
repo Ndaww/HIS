@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use App\Models\MasterEquipmentType;
 use App\Models\MasterRoom;
+use App\Models\Pks;
 use App\Models\PreventiveTask;
 use App\Models\Ticket;
 use Carbon\Carbon;
@@ -85,7 +86,7 @@ class ReportController extends Controller
                 return optional($ticket->assigned)->name ?? '-';
                 })
                 ->editColumn('created_at', function($ticket){
-                    return $ticket->created_at->format('d-m-Y H:i');
+                    return $ticket->created_at->format('d-m-Y');
                 })
                 ->editColumn('updated_at', function($ticket){
                     return $ticket->updated_at->format('d-m-Y H:i');
@@ -189,4 +190,75 @@ class ReportController extends Controller
             ->rawColumns(['tindakan'])
             ->make(true);
         }
+
+    public function indexPKS()
+    {
+        return view('pages.reports.pks');
+    }
+
+    public function getAllPKS(Request $request)
+    {
+        $query = Pks::with(['requester']);
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('performed_date', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('performed_date', '<=', $request->end_date);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->editColumn('created_at', function($pks){
+                return $pks->created_at->format('d-m-Y H:i');
+            })
+            ->editColumn('start_date', function($pks){
+                return Carbon::parse($pks->start_date)->format('d-m-Y');
+            })
+            ->editColumn('end_date', function($pks){
+                return Carbon::parse($pks->end_date)->format('d-m-Y');
+            })
+            ->editColumn('status', function ($pks) {
+                if($pks->status == 'submitted') {
+                    $badge = 'bg-info';
+                } else if ($pks->status == 'verified'){
+                    $badge = 'bg-primary';
+                } else if ($pks->status == 'approved'){
+                    $badge = 'bg-success';
+                } else if ($pks->status == 'rejected'){
+                    $badge = 'bg-danger';
+                } else if ($pks->status == 'signed'){
+                    $badge = 'bg-secondary';
+                }
+                return '<span class="badge bg-success '.$badge.' text-capitalize">'.$pks->status.'</span>';
+            })
+            ->editColumn('initial_document', function($pks){
+                if($pks->initial_document != null ){
+                    return '<a href="/storage/'.$pks->initial_document.'" target="_blank"><button class="btn-sm btn-primary align-self-center text-center"><i class="ri ri-file-check-line"></i></button></a>';
+                } else {
+                    return '<button class="btn-sm btn-disabled btn-secondary align-self-center text-center" disabled><i class="ri ri-file-close-line"></i></button>';
+                }
+            })
+            ->editColumn('draft_document', function($pks){
+                if($pks->draft_document != null ){
+                    return '<a href="/storage/'.$pks->draft_document.'" target="_blank"><button class="btn-sm btn-primary align-self-center text-center"><i class="ri ri-file-check-line"></i></button></a>';
+                } else {
+                    return '<button class="btn-sm btn-disabled btn-secondary align-self-center text-center" disabled><i class="ri ri-file-close-line"></i></button>';
+                }
+            })
+            ->editColumn('final_document', function($pks){
+                if($pks->final_document != null ){
+                    return '<button class="btn-sm btn-primary align-self-center text-center" href="/storage/'.$pks->final_document.'" target="_blank"><i class="ri ri-file-check-line"></i></button>';
+                } else {
+                    return '<button class="btn btn-sm btn-disabled btn-secondary align-self-center text-center" disabled><i class="ri ri-file-close-line"></i></button>';
+                }
+            })
+            ->rawColumns(['status','initial_document' ,'draft_document','final_document'])
+            ->make(true);
+    }
 }

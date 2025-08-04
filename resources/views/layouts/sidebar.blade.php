@@ -26,13 +26,14 @@
         </li>
         <li>
           <div class="parent {{request()->is('pks*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
-         <i class="ri-sm ri-shake-hands-line"></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         <i class="ri-sm "></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 
           <ul class="child-menu" style="{{ request()->is('pks*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('pks/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/create">Buat Pengajuan</a></li>
             <li class="full-click {{ request()->is('pks/pengajuan-saya') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/pengajuan-saya">Pengajuan Saya</a></li>
-            <li class="full-click {{ request()->is('pks/verify') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/verify">Verifikasi PKS</a></li>
+            <li class="full-click {{ request()->is('pks/verify') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/verify">Data PKS (Legal)</a></li>
+            <li class="full-click {{ request()->is('pks/approval') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pks/approval">Approval Direksi</a></li>
           </ul>
         </li>
         <li>
@@ -43,6 +44,7 @@
           <ul class="child-menu" style="{{ request()->is('reports*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('reports/ticket') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/ticket"> <i class="ri-sm ri-ticket-fill"></i> Laporan Ticketing</a></li>
             <li class="full-click {{ request()->is('reports/preventive') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/preventive"> <i class="ri-sm ri-task-fill"></i> Laporan Preventive</a></li>
+            <li class="full-click {{ request()->is('reports/pks') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/pks"> <i class="ri-sm ri-shake-hands-line"></i> Laporan PKS</a></li>
             {{-- <li class="full-click {{ request()->is('ticketing') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing">Tiket Saya</a></li> --}}
             {{-- <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li> --}}
           </ul>

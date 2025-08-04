@@ -9,6 +9,15 @@
     <div class="card">
         <div class="card-header">Verifikasi PKS</div>
         <div class="card-body">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <form id="filter-form" class="row g-3 mb-4">
                 <div class="col-md-5">
                     <label>Tanggal Awal</label>
@@ -38,6 +47,8 @@
                         <th>Tanggal Akhir</th>
                         <th>Dokumen Awal</th>
                         <th>Tanggal Buat</th>
+                        <th>Status</th>
+                        <th>Note</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -45,15 +56,6 @@
 
         </div>
         </div>
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
     </div>
 
     {{-- Modal verify --}}
@@ -93,7 +95,47 @@
             </form>
         </div>
     </div>
+    {{-- Modal Upload Ulang Draft --}}
+    <div class="modal fade" id="modal-reupload-draft" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="reupload-draft-form" action="{{ route('pks.reupload.draft') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="pks_id">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Upload Ulang Draft PKS</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="file" name="draft_document" class="form-control" accept=".pdf" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ri ri-upload-2-line"></i> Upload Ulang
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    {{-- Modal Final --}}
+    <div class="modal fade" id="modal-upload-final" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="upload-final-form" action="{{ route('pks.uploadFinal') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="pks_id">
+                <div class="modal-content">
+                    <div class="modal-header"><h5 class="modal-title">Upload Dokumen Final</h5></div>
+                    <div class="modal-body">
+                        <input type="file" name="final_document" class="form-control" accept=".pdf" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success"><i class="ri ri-upload-2-line"></i> Upload</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @section('js')
@@ -102,6 +144,7 @@
         const table = $('#pks-table').DataTable({
             processing: true,
             serverSide: true,
+            responsive: true,
             ajax: {
                 url: '{{ route("pks.verify") }}',
                 data: function (d) {
@@ -145,6 +188,7 @@
                 },
                 { data: 'created_at', name: 'created_at' },
                 { data: 'status', name: 'status' },
+                { data: 'note', name: 'note' },
                 {
                     data: 'action',
                     name: 'action',
@@ -165,18 +209,30 @@
             table.ajax.reload();
         });
 
-        // Modal handler (upload draft)
+        // Modal upload draft (verifikasi)
         $('#modal-verify').on('show.bs.modal', function (e) {
             const button = $(e.relatedTarget);
             const id = button.data('id');
             $('#verify-form input[name="pks_id"]').val(id);
         });
 
-        // Modal handler (reject)
+        // Modal reject
         $('#modal-reject').on('show.bs.modal', function (e) {
             const button = $(e.relatedTarget);
             const id = button.data('id');
             $('#reject-form input[name="pks_id"]').val(id);
+        });
+
+        // Modal reupload draft
+        $('#modal-reupload-draft').on('show.bs.modal', function (e) {
+            const id = $(e.relatedTarget).data('id');
+            $('#reupload-draft-form input[name="pks_id"]').val(id);
+        });
+
+        // Modal final
+        $('#modal-upload-final').on('show.bs.modal', function (e) {
+            const id = $(e.relatedTarget).data('id');
+            $('#upload-final-form input[name="pks_id"]').val(id);
         });
 
         // Submit Verifikasi
@@ -215,6 +271,50 @@
                     $('#pks-table').DataTable().ajax.reload();
                 },
                 error: function(xhr) {
+                    Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');
+                }
+            });
+        });
+
+        // Submit Upload Ulang Draft
+        $('#reupload-draft-form').on('submit', function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    $('#modal-reupload-draft').modal('hide');
+                    Swal.fire('Berhasil!', res.message, 'success');
+                    $('#pks-table').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');
+                }
+            });
+        });
+
+        // Submit upload final
+        $('#upload-final-form').on('submit', function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    $('#modal-upload-final').modal('hide');
+                    Swal.fire('Berhasil!', res.message, 'success');
+                    $('#pks-table').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
                     Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');
                 }
             });
