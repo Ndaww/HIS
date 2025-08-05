@@ -178,6 +178,10 @@ Route::get('/zawa/qr', function () {
 
     $data = $response->json();
 
+    // Tambahkan delay 2 detik
+    sleep(5);
+
+
     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
 
     $response = Http::withHeaders([
