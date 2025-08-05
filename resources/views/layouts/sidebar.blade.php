@@ -1,7 +1,7 @@
 <div class="sidebar" id="sidebar">
       <h2>Menu</h2>
       <ul>
-        <li class="menu-item"><i class="ri-sm ri-dashboard-line"></i> Dashboard</li>
+        <li class="menu-item full-click"><a href="/dashboard"><i class="ri-sm ri-dashboard-line"></i> Dashboard</a></li>
         <li>
           <div class="parent {{request()->is('master*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-book-line"></i> Master <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -9,6 +9,7 @@
 
           <ul class="child-menu" style="{{ request()->is('master*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('master/patients*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/patients">Master Pasien</a></li>
+            <li class="full-click {{ request()->is('master/rooms*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/rooms">Master Ruangan</a></li>
           </ul>
         </li>
         <li>

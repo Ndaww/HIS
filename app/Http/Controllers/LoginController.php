@@ -22,7 +22,7 @@ class LoginController extends Controller
 
         if (Auth::attempt(['nik' => $credentials['nik'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([

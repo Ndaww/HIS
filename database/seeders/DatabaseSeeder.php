@@ -6,11 +6,13 @@ use App\Models\Department;
 use App\Models\EquipmentPreventiveType;
 use App\Models\MasterEquipment;
 use App\Models\MasterEquipmentType;
+use App\Models\MasterPatient;
 use App\Models\MasterPreventive;
 use App\Models\MasterRoom;
 use App\Models\Ticket;
 use App\Models\TicketSubstitution;
 use App\Models\User;
+use Carbon\Carbon;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -217,6 +219,21 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
             }
+        }
+
+        // pasien
+        $genders = ['L', 'P'];
+
+        for ($i = 0; $i < 10; $i++) {
+            MasterPatient::create([
+                'name' => 'Pasien ' . Str::random(5),
+                'gender' => $genders[array_rand($genders)],
+                'birth_date' => Carbon::now()->subYears(rand(18, 60))->subDays(rand(1, 365))->format('Y-m-d'),
+                'no_ktp' => '3204' . rand(1000000000, 9999999999),
+                'no_bpjs' => rand(0, 1) ? 'BPJS' . rand(1000000000, 9999999999) : null,
+                'address' => rand(0, 1) ? 'Jalan ' . Str::random(10) : null,
+                'phone' => rand(0, 1) ? '08' . rand(1000000000, 9999999999) : null,
+            ]);
         }
     }
 }

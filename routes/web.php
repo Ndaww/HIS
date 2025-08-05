@@ -3,6 +3,7 @@
 use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MasterPatientController;
+use App\Http\Controllers\MasterRoomController;
 use App\Http\Controllers\PksController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
@@ -10,23 +11,54 @@ use App\Http\Controllers\RoomBookingController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ValidasiGAController;
 use App\Http\Controllers\WhatsappController;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\TelegramTicketNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 
 Route::get('/', function () {
-    return view('layouts.app');
+    // return view('layouts.app');
+    return redirect ('login');
 });
 
-Route::get('/tes-telegram', function () {
-    Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
-        ->notify(new TelegramTicketNotification('Test pesan dari Laravel!'));
+Route::get('/dashboard', function(){
+      $tickets = Ticket::all();
 
-    return 'Terkirim!';
-});
+    // Summary
+    $total = $tickets->count();
+    $open = $tickets->where('status', 'open')->count();
+    $priority = [
+        'low' => $tickets->where('priority', 'low')->count(),
+        'medium' => $tickets->where('priority', 'medium')->count(),
+        'high' => $tickets->where('priority', 'high')->count(),
+    ];
+
+    // Tiket per hari
+    $grouped = $tickets->groupBy(function ($item) {
+        return Carbon::parse($item->created_at)->format('Y-m-d');
+    });
+
+    $dates = [];
+    $counts = [];
+
+    foreach ($grouped as $date => $items) {
+        $dates[] = $date;
+        $counts[] = $items->count();
+    }
+
+    return view('dashboard', compact('total', 'open', 'priority', 'dates', 'counts'));
+})->middleware('auth')->name('dashboard');
+
+// Route::get('/tes-telegram', function () {
+//     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
+//         ->notify(new TelegramTicketNotification('Test pesan dari Laravel!'));
+
+//     return 'Terkirim!';
+// });
 
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -39,7 +71,7 @@ Route::get('/ticketing/list-ticket', [TicketController::class, 'getDataTiketSaya
 Route::get('/api/ticket/{id}', [TicketController::class, 'getSingleTicketSaya']);
 Route::get('/ticketing/list-ticket-dept', [TicketController::class, 'getDataTiketDept'])->name('list-ticket-dept');
 Route::get('/api/ticket-dept/{id}', [TicketController::class, 'getSingleTicketDept']);
-Route::get('/ticketing/dept', [TicketController::class, 'indexMyDept']);
+Route::get('/ticketing/dept', [TicketController::class, 'indexMyDept'])->middleware('auth');
 Route::post('/ticketing/delegasi', [TicketController::class, 'delegasi']);
 Route::post('/ticketing/progress', [TicketController::class, 'progress']);
 Route::post('/ticketing/pending', [TicketController::class, 'pending']);
@@ -51,7 +83,7 @@ Route::resource('/ticketing',TicketController::class)->middleware('auth');
 
 // Preventive
 Route::get('/ajax/get-equipment-by-rooms', [PreventiveTaskController::class, 'getEquipmentByRooms'])->name('ajax.getEquipmentByRooms');
-Route::get('/preventive/task',[PreventiveTaskController::class, 'indexTask']);
+Route::get('/preventive/task',[PreventiveTaskController::class, 'indexTask'])->middleware('auth');
 Route::get('/preventive-task/task/{id}/form', [PreventiveTaskController::class, 'createTask'])->name('preventive-task.task');
 Route::post('/preventive-task/task/{id}/submit', [PreventiveTaskController::class, 'storeResult'])->name('preventive-task.store-task');
 Route::get('/preventive/history', [PreventiveTaskController::class, 'history'])->name('preventive-task.history');
@@ -60,6 +92,7 @@ Route::resource('/preventive',PreventiveTaskController::class);
 
 // PKS
 // dept
+Route::get('/pks/create', [PksController::class, 'create']);
 Route::get('/pks/pengajuan-saya', [PksController::class, 'mypks'])->name('pks.pengajuan-saya');
 // legal
 Route::get('/pks/verify', [PksController::class, 'indexSubmitted']);
@@ -101,6 +134,12 @@ Route::get('/reports/pks/get', [ReportController::class, 'getAllPKS'])->name('li
 
 // Route::get('/registrasi', [MasterPatientController::class, 'create']);
 // Route::post('/registrasi', [MasterPatientController::class, 'store'])->name('registrasi.store');
+
+// master ruangan
+Route::get('/master/rooms', [MasterRoomController::class, 'index'])->name('rooms.index');
+Route::get('/master/rooms/data', [MasterRoomController::class, 'data'])->name('rooms.data');
+Route::resource('/master/rooms', MasterRoomController::class);
+Route::put('/master/rooms/{id}', [MasterRoomController::class, 'update'])->name('rooms.update');
 
 // master pasien
 Route::get('/master/patients', [MasterPatientController::class, 'index'])->name('patients.index');

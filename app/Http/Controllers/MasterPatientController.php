@@ -120,23 +120,23 @@ class MasterPatientController extends Controller
     public function update(UpdateMasterPatientRequest $request,$id)
     {
         $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'gender' => 'required|in:L,P',
-        'birth_date' => 'required|date',
-        'no_ktp' => 'required|string|unique:master_patients,no_ktp,' . $id,
-        'no_bpjs' => 'nullable|string',
-        'address' => 'nullable|string',
-        'phone' => 'nullable|string',
-    ]);
+            'name' => 'required|string|max:255',
+            'gender' => 'required|in:L,P',
+            'birth_date' => 'required|date',
+            'no_ktp' => 'required|string|unique:master_patients,no_ktp,' . $id,
+            'no_bpjs' => 'nullable|string',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-    $patient = MasterPatient::findOrFail($id);
-    $patient->update($request->all());
+        $patient = MasterPatient::findOrFail($id);
+        $patient->update($request->all());
 
-    return response()->json(['message' => 'Data berhasil diperbarui.']);
+        return response()->json(['message' => 'Data berhasil diperbarui.']);
     }
 
     /**
