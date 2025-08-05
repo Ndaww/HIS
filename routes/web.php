@@ -178,9 +178,8 @@ Route::get('/zawa/qr', function () {
 
     $data = $response->json();
 
-    // Tambahkan delay 2 detik
+    // delay 5 detik menunggu response 
     sleep(5);
-
 
     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
 
@@ -195,7 +194,7 @@ Route::get('/zawa/qr', function () {
     Session::put('zawa_session_id', $data['sessionId']);
     Session::put('zawa_qr', $qr['qrcode']);
 
-    dd(session()->all(), $qr, $response,$response->status(), $response->json(), $response->body()); 
+    // dd(session()->all(), $qr, $response,$response->status(), $response->json(), $response->body()); 
 
     return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
 });
