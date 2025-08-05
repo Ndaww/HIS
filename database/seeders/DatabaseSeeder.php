@@ -49,17 +49,17 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt(1234),
             'name' => "admin",
             'email' => "admin@example.com",
-            'phone' => "087889643945",
-            'department_id' => $departments->random()->id,
+            'phone' => "87889643945",
+            'department_id' => 1,
             'is_active' => true,
         ]);
 
-        User::create(['nik' => "000001",'password' => bcrypt(1234),'name' => "Atasan IT",'email' => "atasanit@example.com",'phone' => "087889643945",'department_id' => 1,'is_active' => true,]);
-        User::create(['nik' => "000002",'password' => bcrypt(1234),'name' => "Atasan HRD",'email' => "atasanhrd@example.com",'phone' => "087889643945",'department_id' => 2,'is_active' => true,]);
-        User::create(['nik' => "000003",'password' => bcrypt(1234),'name' => "Atasan Finance",'email' => "atasanfinance@example.com",'phone' => "087889643945",'department_id' => 3,'is_active' => true,]);
-        User::create(['nik' => "000004",'password' => bcrypt(1234),'name' => "Atasan Maintenance",'email' => "atasanmaintenance@example.com",'phone' => "087889643945",'department_id' => 4,'is_active' => true,]);
-        User::create(['nik' => "000005",'password' => bcrypt(1234),'name' => "Atasan Perawat",'email' => "atasanperawat@example.com",'phone' => "087889643945",'department_id' => 5,'is_active' => true,]);
-        User::create(['nik' => "000006",'password' => bcrypt(1234),'name' => "Atasan GA",'email' => "atasanga@example.com",'phone' => "087889643945",'department_id' => 6,'is_active' => true,]);
+        User::create(['nik' => "000001",'password' => bcrypt(1234),'name' => "Atasan IT",'email' => "atasanit@example.com",'phone' => "87889643945",'department_id' => 1,'is_active' => true,]);
+        User::create(['nik' => "000002",'password' => bcrypt(1234),'name' => "Atasan HRD",'email' => "atasanhrd@example.com",'phone' => "87889643945",'department_id' => 2,'is_active' => true,]);
+        User::create(['nik' => "000003",'password' => bcrypt(1234),'name' => "Atasan Finance",'email' => "atasanfinance@example.com",'phone' => "87889643945",'department_id' => 3,'is_active' => true,]);
+        User::create(['nik' => "000004",'password' => bcrypt(1234),'name' => "Atasan Maintenance",'email' => "atasanmaintenance@example.com",'phone' => "87889643945",'department_id' => 4,'is_active' => true,]);
+        User::create(['nik' => "000005",'password' => bcrypt(1234),'name' => "Atasan Perawat",'email' => "atasanperawat@example.com",'phone' => "87889643945",'department_id' => 5,'is_active' => true,]);
+        User::create(['nik' => "000006",'password' => bcrypt(1234),'name' => "Atasan GA",'email' => "atasanga@example.com",'phone' => "87889643945",'department_id' => 6,'is_active' => true,]);
         $users = collect();
         for ($i = 1; $i <= 10; $i++) {
             $users->push(User::create([
@@ -67,17 +67,17 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt(1234),
                 'name' => "User $i",
                 'email' => "user$i@example.com",
-                'phone' => "08123456789$i",
+                'phone' => "87889643945",
                 'department_id' => $departments->random()->id,
                 'is_active' => true,
             ]));
         }
 
         // Set kepala departemen (acak dari user)
-        foreach ($departments as $department) {
-            $department->head_id = $users->random()->id;
-            $department->save();
-        }
+        // foreach ($departments as $department) {
+        //     $department->head_id = $users->random()->id;
+        //     $department->save();
+        // }
 
         // Buat 30 ticket
         $statuses = ['open', 'in_progress', 'pending', 'solved', 'closed'];

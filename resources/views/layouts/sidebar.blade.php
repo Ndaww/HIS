@@ -1,7 +1,7 @@
 <div class="sidebar" id="sidebar">
       <h2>Menu</h2>
       <ul>
-        <li class="menu-item full-click"><a href="/dashboard"><i class="ri-sm ri-dashboard-line"></i> Dashboard</a></li>
+        <li class="menu-item full-click {{request()->is('dashboard*') ? 'active open' : ''}}"><a class="text-decoration-none text-black" href="/dashboard"><i class="ri-sm ri-dashboard-line"></i> Dashboard</a></li>
         <li>
           <div class="parent {{request()->is('master*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-book-line"></i> Master <span class="arrow"><i class="ri ri-play-fill"></i></span>

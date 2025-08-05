@@ -68,6 +68,10 @@ class Ticket extends Model
             case 'solved':
                 $header = "*[Solved by : {$this->assigned->name}]*";
                 break;
+
+            case 'closed':
+                $header = "*[Closed by : {$name}]*";
+                break;
         }
 
         $message =

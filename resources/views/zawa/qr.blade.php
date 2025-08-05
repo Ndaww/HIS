@@ -5,3 +5,5 @@
 @else
     <p>QR tidak tersedia</p>
 @endif
+
+<a href="/login">Back</a>

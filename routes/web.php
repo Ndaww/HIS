@@ -78,6 +78,7 @@ Route::post('/ticketing/pending', [TicketController::class, 'pending']);
 Route::post('/ticketing/solve', [TicketController::class, 'solve']);
 Route::post('/ticketing/eskalasi', [TicketController::class, 'escalate']);
 Route::post('/ticketing/selesai', [TicketController::class, 'selesai']);
+Route::get('/ticketing/{ticket}/show', [TicketController::class, 'show']);
 Route::resource('/ticketing',TicketController::class)->middleware('auth');
 
 

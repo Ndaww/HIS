@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamp('pending_date')->nullable();
             $table->text('pending_reason')->nullable();
             $table->timestamp('solve_date')->nullable();
-            $table->text('sovle_desc')->nullable();
+            $table->text('solve_desc')->nullable();
             $table->timestamp('closed_date')->nullable();
             $table->timestamps();
         });

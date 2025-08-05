@@ -129,7 +129,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.'87889643945',
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
@@ -153,7 +154,10 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
-        //
+        // dd($ticket);
+        return view('pages.ticketing.show',[
+            'ticket' => $ticket
+        ]);
     }
 
     /**
@@ -207,6 +211,8 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept.head','assigned']);
 
+            $phone = $ticket->assigned->phone;
+
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
                 'id' => Session::get('zawa_id'),
@@ -214,7 +220,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
@@ -259,6 +266,8 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept.head','assigned']);
 
+            $phone = $ticket->requester->phone;
+
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
                 'id' => Session::get('zawa_id'),
@@ -266,7 +275,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
@@ -293,6 +303,7 @@ class TicketController extends Controller
             $ticket->update([
                 'status' => 'pending',
                 'updated_at' => now(),
+                'pending_date' => now(),
                 'pending_reason' => $request->reason
             ]);
 
@@ -310,6 +321,8 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept.head','assigned']);
 
+            $phone = $ticket->requester->phone;
+
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
                 'id' => Session::get('zawa_id'),
@@ -317,7 +330,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
@@ -347,6 +361,8 @@ class TicketController extends Controller
             $ticket = Ticket::findOrFail($request->id);
             $ticket->update([
                 'status' => 'solved',
+                'solve_desc' => $request->keterangan,
+                'solve_date' => now(),
                 'updated_at' => now(),
             ]);
 
@@ -376,6 +392,7 @@ class TicketController extends Controller
             // }
 
             $ticket->load(['requester', 'dept.head','assigned']);
+            $phone = $ticket->requester->phone;
 
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
@@ -384,14 +401,15 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
             ]);
 
             return response()->json([
-                'message' => 'Tiket Dipending!',
+                'message' => 'Tiket Solved!',
                 'ticket_number' => $ticket->ticket_number,
                 'assigned' => $ticket->assigned->name
             ], 200);
@@ -428,6 +446,8 @@ class TicketController extends Controller
             // }
 
             $ticket->load(['requester', 'dept.head','assigned']);
+            
+            $phone = $ticket->assigned->phone;
 
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
@@ -436,7 +456,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
@@ -477,6 +498,8 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept.head','assigned']);
 
+            $phone = $ticket->assigned->phone;
+
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
                 'id' => Session::get('zawa_id'),
@@ -484,7 +507,8 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '6287889643945',
+                'phone' => '62'.$phone,
+                // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',
                 'text' => $message,
