@@ -177,7 +177,6 @@ Route::get('/zawa/qr', function () {
     $response = Http::post('https://api-zawa.azickri.com/authorize');
 
     $data = $response->json();
-    dd($data);
 
     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
 
