@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Session;
 Route::get('/', function () {
     // return view('layouts.app');
     return redirect ('login');
-});
+})->middleware('guest');
 
 Route::get('/dashboard', function(){
       $tickets = Ticket::all();
@@ -177,7 +177,7 @@ Route::get('/zawa/qr', function () {
     $response = Http::post('https://api-zawa.azickri.com/authorize');
 
     $data = $response->json();
-    // dd($data->id);
+    dd($data);
 
     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
 
