@@ -191,7 +191,7 @@ Route::get('/zawa/qr', function () {
     Session::put('zawa_session_id', $data['sessionId']);
     Session::put('zawa_qr', $qr['qrcode']);
 
-    dd(session()->all()); 
+    dd(session()->all(), $qr, $response); 
 
     return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
 });
