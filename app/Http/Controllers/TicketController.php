@@ -122,6 +122,8 @@ class TicketController extends Controller
 
             $ticket->load(['requester', 'dept.head','assigned']);
 
+            $phone = $ticket->requester->phone;
+
             $message = $ticket->generateMessage();
             $response = Http::withHeaders([
                 'id' => Session::get('zawa_id'),
@@ -129,7 +131,7 @@ class TicketController extends Controller
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
             ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.'87889643945',
+                'phone' => '62'.$phone,
                 // 'phone' => '6287889643945',
                 // 'group' => '6287889643945',
                 'type' => 'text',

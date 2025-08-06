@@ -85,7 +85,6 @@ Message     : {$this->description}
 
 $pending
 
-_http://127.0.0.1:8000/ticketing/{$this->id}/show_
 _https://thinksys.my.id/ticketing/{$this->id}/show_
 MSG;
 

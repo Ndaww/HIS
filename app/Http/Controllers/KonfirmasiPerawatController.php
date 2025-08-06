@@ -36,16 +36,25 @@ class KonfirmasiPerawatController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'room_ids' => 'required|array',
-            'room_ids.*' => 'exists:master_rooms,id'
-        ]);
+        // $request->validate([
+        //     'room_ids' => 'required|array',
+        //     'room_ids.*' => 'exists:master_rooms,id'
+        // ]);
 
-        $updated = MasterRoom::whereIn('id', $request->room_ids)
+        if(isset($request->room_id)){
+            $updated = MasterRoom::where('id', $request->room_id)
             ->where('status', 'done ga')
             ->where('ga_status', 'ok')
             ->whereNull('nurse_confirmed_at')
             ->update(['nurse_confirmed_at' => now(),'status'=>'kosong']);
+            return redirect('/kamar-kosong/konfirmasi')->with('success','Berhasil dikonfirmasi');
+        } else {
+            $updated = MasterRoom::whereIn('id', $request->room_ids)
+                ->where('status', 'done ga')
+                ->where('ga_status', 'ok')
+                ->whereNull('nurse_confirmed_at')
+                ->update(['nurse_confirmed_at' => now(),'status'=>'kosong']);
+        }
 
             return response()->json(['message' => "Berhasil mengonfirmasi {$updated} kamar."]);
     }

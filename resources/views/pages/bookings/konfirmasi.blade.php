@@ -31,7 +31,7 @@
     {{-- Modal Konfirmasi --}}
     <div class="modal fade" id="modalKonfirmasi" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <form id="form-konfirmasi">
+            <form id="form-konfirmasi" action="{{ route("nurse.confirm.store") }}" method="POST">
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header">
