@@ -9,6 +9,7 @@ use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomBookingController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketingV2Controller;
 use App\Http\Controllers\ValidasiGAController;
 use App\Http\Controllers\WhatsappController;
 use App\Models\Ticket;
@@ -19,39 +20,41 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\File;
+
 
 Route::get('/', function () {
     // return view('layouts.app');
     return redirect ('login');
 })->middleware('guest');
 
-Route::get('/dashboard', function(){
-      $tickets = Ticket::all();
+// Route::get('/dashboard', function(){
+//       $tickets = Ticket::all();
 
-    // Summary
-    $total = $tickets->count();
-    $open = $tickets->where('status', 'open')->count();
-    $priority = [
-        'low' => $tickets->where('priority', 'low')->count(),
-        'medium' => $tickets->where('priority', 'medium')->count(),
-        'high' => $tickets->where('priority', 'high')->count(),
-    ];
+//     // Summary
+//     $total = $tickets->count();
+//     $open = $tickets->where('status', 'open')->count();
+//     $priority = [
+//         'low' => $tickets->where('priority', 'low')->count(),
+//         'medium' => $tickets->where('priority', 'medium')->count(),
+//         'high' => $tickets->where('priority', 'high')->count(),
+//     ];
 
-    // Tiket per hari
-    $grouped = $tickets->groupBy(function ($item) {
-        return Carbon::parse($item->created_at)->format('Y-m-d');
-    });
+//     // Tiket per hari
+//     $grouped = $tickets->groupBy(function ($item) {
+//         return Carbon::parse($item->created_at)->format('Y-m-d');
+//     });
 
-    $dates = [];
-    $counts = [];
+//     $dates = [];
+//     $counts = [];
 
-    foreach ($grouped as $date => $items) {
-        $dates[] = $date;
-        $counts[] = $items->count();
-    }
+//     foreach ($grouped as $date => $items) {
+//         $dates[] = $date;
+//         $counts[] = $items->count();
+//     }
 
-    return view('dashboard', compact('total', 'open', 'priority', 'dates', 'counts'));
-})->middleware('auth')->name('dashboard');
+//     return view('dashboard', compact('total', 'open', 'priority', 'dates', 'counts'));
+// })->middleware('auth')->name('dashboard');
 
 // Route::get('/tes-telegram', function () {
 //     Notification::route('telegram', env('TELEGRAM_CHAT_ID'))
@@ -59,6 +62,120 @@ Route::get('/dashboard', function(){
 
 //     return 'Terkirim!';
 // });
+
+Route::get('/dashboard', function(){
+    $tickets = Ticket::all();
+
+    // --- Ringkasan (Info Cards) ---
+    $total = $tickets->count();
+    $open = $tickets->where('status', 'open')->count();
+    $priority = [
+        'low' => $tickets->where('priority', 'low')->count(),
+        'medium' => $tickets->where('priority', 'medium')->count(),
+        'high' => $tickets->where('priority', 'high')->count(),
+    ];
+    $closedToday = $tickets->where('status', 'closed')
+                           ->whereBetween('updated_at', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
+                           ->count();
+
+    $dailyStatus = [
+        'open' => $tickets->where('status', 'open')->count(),
+        'solved' => $tickets->where('status', 'solved')->count(),
+        'in_progress' => $tickets->where('status', 'in_progress')->count(),
+        'closed' => $tickets->where('status', 'closed')->count(),
+        'pending' => $tickets->where('status', 'pending')->count(),
+    ];
+
+    $startDate = Carbon::now()->subMonth()->startOfMonth();
+    $endDate = Carbon::now()->endOfMonth();
+
+    $monthlyTickets = Ticket::whereBetween('created_at', [$startDate, $endDate])
+                            ->orderBy('created_at', 'asc')
+                            ->get();
+
+    $groupedMonthly = $monthlyTickets->groupBy(function ($item) {
+        return Carbon::parse($item->created_at)->format('d-M-y');
+    });
+
+    $monthlyDates = [];
+    $monthlyCounts = [];
+
+    foreach ($groupedMonthly as $date => $items) {
+        $monthlyDates[] = $date;
+        $monthlyCounts[] = $items->count();
+    }
+
+    $latestTickets = Ticket::orderBy('created_at', 'desc')->limit(10)->get();
+
+    $monthsForSelect = [];
+    for ($i = 0; $i < 11; $i++) {
+        $month = Carbon::now()->subMonths($i);
+        $monthsForSelect[] = [
+            'value' => $month->format('Y-m'),
+            'label' => $month->isoFormat('MMMM YYYY')
+        ];
+    }
+    $monthsForSelect = array_reverse($monthsForSelect);
+
+
+    return view('dashboard', compact(
+        'total', 'open', 'priority', 'closedToday',
+        'dailyStatus',
+        'monthlyDates', 'monthlyCounts',
+        'latestTickets',
+        'monthsForSelect'
+    ));
+})->middleware('auth')->name('dashboard');
+
+Route::get('/dashboard/monthly-tickets', function (Request $request) {
+    try {
+        $monthYear = $request->query('month', Carbon::now()->format('Y-m'));
+        if (!preg_match('/^\d{4}-\d{2}$/', $monthYear)) {
+            return response()->json(['error' => 'Invalid month format.'], 400);
+        }
+
+        $dateInstance = Carbon::parse($monthYear);
+
+        $startDate = $dateInstance->copy()->startOfMonth();
+        // kalo bulan ini, ambil hari ini
+        if ($monthYear == Carbon::now()->format('Y-m')) {
+            $endDate = Carbon::now()->endOfDay();
+        } else {
+            $endDate = $dateInstance->copy()->endOfMonth();
+        }
+
+        // dd('StartDate:', $startDate->toDateTimeString(), 'EndDate:', $endDate->toDateTimeString());
+
+        $tickets = Ticket::whereBetween('created_at', [$startDate, $endDate])
+                         ->orderBy('created_at', 'asc')
+                         ->get();
+
+        $grouped = $tickets->groupBy(function ($item) {
+            return Carbon::parse($item->created_at)->format('d-M-y');
+        });
+
+        $dates = [];
+        $counts = [];
+
+        for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
+            $formattedDate = $d->format('d-M-y');
+            $dates[] = $formattedDate;
+            $counts[] = $grouped->has($formattedDate) ? $grouped[$formattedDate]->count() : 0;
+        }
+
+        return response()->json([
+            'labels' => $dates,
+            'data' => $counts
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error fetching monthly ticket data: ' . $e->getMessage());
+        return response()->json(['error' => 'An unexpected error occurred. Please check the server logs.'], 500);
+    }
+})->middleware('auth')->name('dashboard.monthly-tickets');
+
+
+
 
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -80,6 +197,13 @@ Route::post('/ticketing/eskalasi', [TicketController::class, 'escalate']);
 Route::post('/ticketing/selesai', [TicketController::class, 'selesai']);
 Route::get('/ticketing/{ticket}/show', [TicketController::class, 'show']);
 Route::resource('/ticketing',TicketController::class)->middleware('auth');
+
+// Ticketing V2
+Route::get('/ticket/v2/ticket-counts', [TicketingV2Controller::class, 'getTicketCounts']);
+Route::get('/ticket/v2/ticket-depts-counts', [TicketingV2Controller::class, 'getTicketDeptsCounts']);
+Route::get('/ticket/v2/list-ticket-dept', [TicketingV2Controller::class, 'getDataTiketDept'])->name('list-ticket-dept-v2');
+Route::get('/ticket/v2/dept', [TicketingV2Controller::class, 'indexMyDept'])->middleware('auth');
+Route::resource('/ticket/v2',TicketingV2Controller::class)->middleware('auth');
 
 
 // Preventive
@@ -148,7 +272,7 @@ Route::get('/master/patients/data', [MasterPatientController::class, 'data'])->n
 Route::resource('/master/patients', MasterPatientController::class);
 Route::put('/master/patients/{id}', [MasterPatientController::class, 'update'])->name('patients.update');
 
-// room booking 
+// room booking
 Route::get('/kamar-kosong/bookings', [RoomBookingController::class, 'index'])->name('bookings.index');
 Route::post('/bookings', [RoomBookingController::class, 'store'])->name('bookings.store');
 Route::get('/bookings/data', [RoomBookingController::class, 'data'])->name('bookings.data');
@@ -174,30 +298,82 @@ Route::post('/kamar-kosong/konfirmasi/store', [KonfirmasiPerawatController::clas
 // WA
 // Route::get('/kirim-whatsapp', [WhatsappController::class, 'kirim']);
 
+// Route::get('/zawa/qr', function () {
+//     $response = Http::post('https://api-zawa.azickri.com/authorize');
+
+//     $data = $response->json();
+
+//     // delay 5 detik menunggu response
+//     sleep(5);
+
+//     $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
+
+//     $response = Http::withHeaders([
+//         'id' => $data['id'],
+//         'session-id' => $data['sessionId'],
+//         'Accept' => '*/*',
+//     ])->get('https://api-zawa.azickri.com/qrcode');
+//     $qr = $response->json();
+
+//     Session::put('zawa_id', $data['id']);
+//     Session::put('zawa_session_id', $data['sessionId']);
+//     Session::put('zawa_qr', $qr['qrcode']);
+
+//     // dd(session()->all(), $qr, $response,$response->status(), $response->json(), $response->body());
+
+//     return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
+// });
+
 Route::get('/zawa/qr', function () {
+    // Langkah 1: Cek apakah sesi Zawa sudah ada di .env
+    // Jika sudah, langsung tampilkan pesan sukses dan keluar
+    if (env('ZAWA_ID') && env('ZAWA_SESSION_ID')) {
+        return "Zawa sudah terhubung. Sesi telah tersimpan di file .env.";
+    }
+
+    // Langkah 2: Jika belum ada, panggil API untuk mendapatkan QR Code
     $response = Http::post('https://api-zawa.azickri.com/authorize');
 
-    $data = $response->json();
+    if ($response->failed()) {
+        return "Gagal menginisiasi otorisasi Zawa. Coba lagi.";
+    }
 
-    // delay 5 detik menunggu response 
+    $data = $response->json();
+    $id = $data['id'];
+    $sessionId = $data['sessionId'];
+
+    // Menunggu beberapa detik agar QR code siap
     sleep(5);
 
-    $response = Http::get('https://api-zawa.azickri.com/qrcode?id='.$data['id'].'&session-id='.$data['sessionId']);
-
-    $response = Http::withHeaders([
-        'id' => $data['id'],
-        'session-id' => $data['sessionId'],
+    // Langkah 3: Ambil gambar QR Code
+    $qrResponse = Http::withHeaders([
+        'id' => $id,
+        'session-id' => $sessionId,
         'Accept' => '*/*',
     ])->get('https://api-zawa.azickri.com/qrcode');
-    $qr = $response->json();
 
-    Session::put('zawa_id', $data['id']);
-    Session::put('zawa_session_id', $data['sessionId']);
-    Session::put('zawa_qr', $qr['qrcode']);
+    if ($qrResponse->failed()) {
+        return "Gagal mendapatkan QR Code. Silakan muat ulang halaman.";
+    }
 
-    // dd(session()->all(), $qr, $response,$response->status(), $response->json(), $response->body()); 
+    $qr = $qrResponse->json();
+    $qrCodeImage = $qr['qrcode'] ?? null;
 
-    return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
+    // Langkah 4: Simpan id dan sessionId ke file .env
+    // Ini adalah langkah kunci yang akan menyimpan sesi secara permanen
+    $envPath = base_path('.env');
+    $envContent = File::get($envPath);
+
+    // Tambahkan baris baru ke file .env
+    $envContent .= "\nZAWA_ID={$id}";
+    $envContent .= "\nZAWA_SESSION_ID={$sessionId}";
+
+    File::put($envPath, $envContent);
+
+    // Langkah 5: Tampilkan QR Code ke pengguna
+    // Sekarang, sesi sudah tersimpan di .env, jadi Anda hanya perlu menampilkan QR code
+    // untuk dipindai oleh pengguna.
+    return view('zawa.qr', ['qr' => $qrCodeImage]);
 });
 
 Route::get('/zawa/qr/send', function() {

@@ -1,5 +1,6 @@
 <div class="sidebar" id="sidebar">
-      <h2>Menu</h2>
+      <img class="text-center" src="{{asset('/assets/img/logo.png')}}" alt="" width="50%" style="display: block;margin: auto;">
+      <hr>
       <ul>
         <li class="menu-item full-click {{request()->is('dashboard*') ? 'active open' : ''}}"><a class="text-decoration-none text-black" href="/dashboard"><i class="ri-sm ri-dashboard-line"></i> Dashboard</a></li>
         <li>
@@ -8,7 +9,7 @@
          </div>
 
           <ul class="child-menu" style="{{ request()->is('master*') ? 'display: block;' : '' }}">
-            <li class="full-click {{ request()->is('master/patients*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/patients">Master Pasien</a></li>
+            {{-- <li class="full-click {{ request()->is('master/patients*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/patients">Master Pasien</a></li> --}}
             <li class="full-click {{ request()->is('master/rooms*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/rooms">Master Ruangan</a></li>
           </ul>
         </li>
@@ -23,6 +24,18 @@
             <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li>
           </ul>
         </li>
+
+        <li>
+          <div class="parent {{request()->is('ticket/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-ticket-line"></i> Ticketing V2 <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('ticket/v2*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('ticket/v2/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/create">Buat Tiket</a></li>
+            <li class="full-click {{ request()->is('ticket/v2') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2">Pengajuan Saya</a></li>
+            <li class="full-click {{ request()->is('ticket/v2/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/dept">Semua Tiket</a></li>
+          </ul>
+        </li>
         <li>
           <div class="parent {{request()->is('preventive*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -34,7 +47,7 @@
             <li class="full-click {{ request()->is('preventive/history') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/history">History Tugas Saya</a></li>
           </ul>
         </li>
-        <li>
+        {{-- <li>
           <div class="parent {{request()->is('pks*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-shake-hands-line "></i> PKS <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
@@ -56,7 +69,7 @@
             <li class="full-click {{ request()->is('kamar-kosong/validasi') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/kamar-kosong/validasi">Validasi GA</a></li>
             <li class="full-click {{ request()->is('kamar-kosong/konfirmasi') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/kamar-kosong/konfirmasi">Konfirmasi Perawat</a></li>
           </ul>
-        </li>
+        </li> --}}
         <li>
           <div class="parent {{request()->is('reports*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-folder-5-line"></i> Laporan <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -65,7 +78,7 @@
           <ul class="child-menu" style="{{ request()->is('reports*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('reports/ticket') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/ticket"> <i class="ri-sm ri-ticket-fill"></i> Laporan Ticketing</a></li>
             <li class="full-click {{ request()->is('reports/preventive') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/preventive"> <i class="ri-sm ri-task-fill"></i> Laporan Preventive</a></li>
-            <li class="full-click {{ request()->is('reports/pks') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/pks"> <i class="ri-sm ri-shake-hands-line"></i> Laporan PKS</a></li>
+            {{-- <li class="full-click {{ request()->is('reports/pks') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/reports/pks"> <i class="ri-sm ri-shake-hands-line"></i> Laporan PKS</a></li> --}}
             {{-- <li class="full-click {{ request()->is('ticketing') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing">Tiket Saya</a></li> --}}
             {{-- <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li> --}}
           </ul>

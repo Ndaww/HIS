@@ -2,13 +2,60 @@
 @section('main-content')
     <div class="header-breadcrumb">
         <h2 id="page-title">Daftar Tiket</h2>
-        <div class="breadcrumb" id="breadcrumb"> <span>Ticketing</span> / Daftar Tiket Saya </div>
+        <div class="breadcrumb" id="breadcrumb"> <span>Ticketing</span> / Daftar Pengajuan Tiket Oleh Saya </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Daftar Tiket</div>
+        <div class="card-header">
+            <div class="row">
+                <style>
+                .nav-buttons .nav-link {
+                    background-color: #f8f9fa; /* Latar belakang abu-abu terang */
+                    color: #495057; /* Warna teks default */
+                    border: 1px solid #dee2e6; /* Border tipis */
+                    border-radius: 0.25rem; /* Sudut membulat */
+                    margin-right: 0.5rem; /* Jarak antar tombol */
+                    transition: all 0.2s ease-in-out;
+                }
+                .nav-buttons .nav-link.active {
+                    background-color: #2E7D32; /* Latar belakang biru saat aktif */
+                    color: #fff; /* Teks putih saat aktif */
+                    border-color: #2E7D32;
+                }
+                .nav-buttons .nav-link:hover:not(.active) {
+                    background-color: #e9ecef; /* Latar belakang saat di-hover */
+                }
+            </style>
+                <ul class="nav nav-buttons" id="ticketStatusTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="open-tab" data-status="open" type="button" role="tab">
+                                Open <span class="badge rounded-pill bg-danger pb-1" id="open-count"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="inprogress-tab" data-status="in_progress" type="button" role="tab">
+                                In Progress <span class="badge rounded-pill bg-secondary pb-1" id="inprogress-count"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pending-tab" data-status="pending" type="button" role="tab">
+                                Pending <span class="badge rounded-pill bg-warning text-dark pb-1" id="pending-count"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="solved-tab" data-status="solved" type="button" role="tab">
+                                Solved <span class="badge rounded-pill bg-success pb-1" id="solved-count"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="closed-tab" data-status="closed" type="button" role="tab">
+                                Closed <span class="badge rounded-pill bg-info pb-1" id="closed-count"></span>
+                            </button>
+                        </li>
+                    </ul>
+            </div>
+        </div>
         <div class="card-body">
-            {{-- @dd(auth()->user()->department_id) --}}
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label for="start_date">Dari Tanggal</label>
@@ -18,42 +65,30 @@
                     <label for="end_date">Sampai Tanggal</label>
                     <input type="date" id="end_date" name="end_date" class="form-control">
                 </div>
-                <div class="col-md-3">
-                    <label for="status">Status</label>
-                    <select class="form-control" name="status" id="status">
-                        <option value=""> -- Pilih Status -- </option>
-                        <option value="open"> Open </option>
-                        <option value="in_progress"> In Progress </option>
-                        <option value="pending"> Pending </option>
-                        <option value="solved"> Solved </option>
-                        <option value="closed"> Closed </option>
-                    </select>
-                </div>
                 <div class="col-md-3 align-self-end">
                     <button id="filter" class="btn btn-primary"> <i class="ri ri-filter-line"></i>Filter</button>
                     <button id="reset" class="btn btn-secondary"><i class="ri ri-refresh-line"></i> Reset</button>
                 </div>
             </div>
             <table id="tickets-table" class="display nowrap" style="width:100%">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nomor Tiket</th>
-                    <th>Judul</th>
-                    <th>Deskripsi</th>
-                    <th>Requester</th>
-                    <th>Department</th>
-                    <th>Assigned</th>
-                    <th>Status</th>
-                    <th>Prioritas</th>
-                    <th>Dibuat</th>
-                    <th>Update</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-        </table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nomor Tiket</th>
+                        <th>Judul</th>
+                        <th>Deskripsi</th>
+                        <th>Requester</th>
+                        <th>Department</th>
+                        <th>Assigned</th>
+                        <th>Status</th>
+                        <th>Prioritas</th>
+                        <th>Dibuat</th>
+                        <th>Update</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
-
     </div>
 
     <!-- Modal View -->
@@ -89,6 +124,23 @@
 
 @section('js')
 <script>
+// Fungsi untuk mengambil dan memperbarui jumlah tiket
+function updateTicketCounts() {
+    fetch('/ticket/v2/ticket-counts')
+        .then(response => response.json())
+        .then(counts => {
+            // Perbarui badge untuk setiap status
+            document.getElementById('open-count').innerText = counts.open > 0 ? counts.open : '';
+            document.getElementById('inprogress-count').innerText = counts.in_progress > 0 ? counts.in_progress : '';
+            document.getElementById('pending-count').innerText = counts.pending > 0 ? counts.pending : '';
+            document.getElementById('solved-count').innerText = counts.solved > 0 ? counts.solved : '';
+            document.getElementById('closed-count').innerText = counts.closed > 0 ? counts.closed : '';
+        })
+        .catch(error => {
+            console.error('Error fetching ticket counts:', error);
+        });
+}
+
  $(document).ready(function () {
         let table = $('#tickets-table').DataTable({
             processing: true,
@@ -99,7 +151,8 @@
                 data: function (d) {
                     d.start_date = $('#start_date').val();
                     d.end_date = $('#end_date').val();
-                    d.status = $('#status').val();
+                    // d.status = $('#status').val();
+                    d.status = $('#ticketStatusTabs .nav-link.active').data('status');
                 }
             },
             lengthMenu: [10, 25, 50, 100],
@@ -133,6 +186,19 @@
                 { data: 'updated_at' },
                 { data: 'action', orderable: false, searchable: false },
             ]
+        });
+
+         // Event listener untuk klik pada tab status
+        $('#ticketStatusTabs .nav-link').on('click', function() {
+            // Hapus kelas 'active' dari semua tab
+            $('#ticketStatusTabs .nav-link').removeClass('active');
+
+            // Tambahkan kelas 'active' ke tab yang diklik
+            $(this).addClass('active');
+
+            // Reload DataTable untuk memfilter berdasarkan status baru
+            table.ajax.reload();
+            updateTicketCounts();
         });
 
         $('#filter').on('click', function () {
@@ -306,5 +372,6 @@
     popoverTriggerList.forEach(el => {
         new bootstrap.Popover(el, { trigger: 'hover', placement: 'top' });
     });
+    updateTicketCounts();
 </script>
 @endsection

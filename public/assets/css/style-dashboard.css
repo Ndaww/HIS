@@ -1,6 +1,7 @@
 :root {
       --primary-color: #2ecc71;
-      --background-color: #f9fefb;
+      /* --background-color: #f9fefb; */
+      --background-color: #deefe4;
       --text-color: #2f2f2f;
       --sidebar-bg: #ffffff;
       --navbar-bg: #ffffff;
@@ -23,17 +24,27 @@
     }
 
     .navbar {
-      background-color: var(--navbar-bg);
+      /* background-color: #568169; */
+      background: linear-gradient(135deg, #a8ffdf, #34d399, #059669);
       padding: 1rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      background-size: 200% 200%;
+      animation: gradientMove 6s ease infinite;
     }
+
+    @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
     .brand {
       font-weight: bold;
-      color: var(--primary-color);
+      /* color: var(--primary-color); */
+      color: #064e3b;
     }
 
     .right-section {
@@ -107,7 +118,7 @@
       width: 240px;
       background-color: var(--sidebar-bg);
       padding-left: 1rem ;
-      padding-top: 2rem ;
+      /* padding-top: 2rem ; */
       transition: transform 0.3s ease-in-out;
       border-right: 1px solid #eee;
       overflow-y: auto;

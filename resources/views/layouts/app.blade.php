@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>@yield('title','RS Bunda')</title>
+  <title>@yield('title','Hospital Information System')</title>
   <link rel="stylesheet" href="{{ asset('/assets/remixicon/remixicon.css') }}">
   <link rel="stylesheet" href="{{ asset('/assets/bootstrap-5.0.2/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ asset('/assets/css/style-dashboard.css') }}">

@@ -125,15 +125,38 @@ class TicketController extends Controller
             $phone = $ticket->requester->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -216,15 +239,38 @@ class TicketController extends Controller
             $phone = $ticket->assigned->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -271,15 +317,38 @@ class TicketController extends Controller
             $phone = $ticket->requester->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -326,15 +395,38 @@ class TicketController extends Controller
             $phone = $ticket->requester->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -397,15 +489,38 @@ class TicketController extends Controller
             $phone = $ticket->requester->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -448,19 +563,42 @@ class TicketController extends Controller
             // }
 
             $ticket->load(['requester', 'dept.head','assigned']);
-            
+
             $phone = $ticket->assigned->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
@@ -503,15 +641,38 @@ class TicketController extends Controller
             $phone = $ticket->assigned->phone;
 
             $message = $ticket->generateMessage();
+            // $response = Http::withHeaders([
+            //     'id' => Session::get('zawa_id'),
+            //     'session-id' => Session::get('zawa_session_id'),
+            //     'Accept' => '*/*',
+            //     'Content-Type' => 'application/json',
+            // ])->post('https://api-zawa.azickri.com/message',[
+            //     'phone' => '62'.$phone,
+            //     // 'phone' => '6287889643945',
+            //     // 'group' => '6287889643945',
+            //     'type' => 'text',
+            //     'text' => $message,
+            // ]);
+
+            // Ambil kredensial Zawa dari file .env
+            $id = env('ZAWA_ID');
+            $sessionId = env('ZAWA_SESSION_ID');
+
+            if (!$id || !$sessionId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial Zawa tidak ditemukan di file .env. Mohon hubungi administrator.'
+                ], 500);
+            }
+
+            // Panggil API Zawa menggunakan kredensial dari .env
             $response = Http::withHeaders([
-                'id' => Session::get('zawa_id'),
-                'session-id' => Session::get('zawa_session_id'),
+                'id' => $id,
+                'session-id' => $sessionId,
                 'Accept' => '*/*',
                 'Content-Type' => 'application/json',
-            ])->post('https://api-zawa.azickri.com/message',[
-                'phone' => '62'.$phone,
-                // 'phone' => '6287889643945',
-                // 'group' => '6287889643945',
+            ])->post('https://api-zawa.azickri.com/message', [
+                'phone' => '62' . $phone,
                 'type' => 'text',
                 'text' => $message,
             ]);
