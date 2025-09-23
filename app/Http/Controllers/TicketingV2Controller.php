@@ -44,7 +44,12 @@ class TicketingV2Controller extends Controller
      */
     public function create()
     {
-        //
+        $users = User::all();
+        $departments = Department::all();
+        return view('pages.ticketing.create',[
+            'users' => $users,
+            'departments' => $departments
+        ]);
     }
 
     /**

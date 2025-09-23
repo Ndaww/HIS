@@ -321,6 +321,9 @@
                         precision: 0,
                         grid: {
                             display: false
+                        },
+                        ticks: {
+                            stepSize: 1
                         }
                     },
                     x: {

@@ -51,7 +51,6 @@
           document.getElementById('page-title').innerText = title;
           document.getElementById('breadcrumb').innerHTML = title;
 
-          // ⬇ Ubah URL di browser TANPA reload
           history.pushState({ html: html, title: title }, title, url);
         });
     }
@@ -69,7 +68,6 @@
         document.getElementById('page-title').innerText = event.state.title;
         document.getElementById('breadcrumb').innerHTML = event.state.title;
       } else {
-        // Jika tidak ada state, muat default konten
         loadContent('/ajax/dashboard', 'Beranda');
       }
     });

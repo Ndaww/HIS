@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MasterEquipmentController;
 use App\Http\Controllers\MasterPatientController;
 use App\Http\Controllers\MasterRoomController;
 use App\Http\Controllers\PksController;
+use App\Http\Controllers\PreventiveEqController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomBookingController;
@@ -12,6 +15,10 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketingV2Controller;
 use App\Http\Controllers\ValidasiGAController;
 use App\Http\Controllers\WhatsappController;
+use App\Http\Controllers\ZawaController;
+use App\Models\MasterEquipment;
+use App\Models\MasterPreventive;
+use App\Models\PreventiveTask;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\TelegramTicketNotification;
@@ -215,6 +222,14 @@ Route::get('/preventive/history', [PreventiveTaskController::class, 'history'])-
 Route::get('/preventive-task/history/data', [PreventiveTaskController::class, 'historyData'])->name('preventive-task.history.data');
 Route::resource('/preventive',PreventiveTaskController::class);
 
+// Preventive Equipment
+Route::get('/preventive-task/equipment/{id}/form', [PreventiveEqController::class, 'createTask'])->name('preventive-task.equipment');
+Route::get('/get-equipments/{id}/{roomId}', [PreventiveEqController::class, 'getEquipments'])->name('get-equipments');
+Route::get('/get-preventive-tasks/{eqTypeId}', [PreventiveEqController::class, 'getPreventiveTasks'])->name('get-preventive-tasks');
+Route::get('/check-preventive-status/{equipmentId}', [PreventiveEqController::class, 'checkPreventiveStatus'])->name('check-preventive-status');
+Route::post('/preventive/store-task', [PreventiveEqController::class, 'storeTask'])->name('preventive-task-equipment.store-task');
+
+
 // PKS
 // dept
 Route::get('/pks/create', [PksController::class, 'create']);
@@ -266,28 +281,49 @@ Route::get('/master/rooms/data', [MasterRoomController::class, 'data'])->name('r
 Route::resource('/master/rooms', MasterRoomController::class);
 Route::put('/master/rooms/{id}', [MasterRoomController::class, 'update'])->name('rooms.update');
 
+// master dept
+Route::get('/master/depts', [DepartmentController::class, 'index'])->name('master.depts.index');
+Route::post('/master/depts', [DepartmentController::class, 'store'])->name('master.depts.store');
+Route::get('/master/depts/{department}', [DepartmentController::class, 'show'])->name('master.depts.show');
+Route::put('/master/depts/{department}', [DepartmentController::class, 'update'])->name('master.depts.update');
+Route::delete('/master/depts/{department}', [DepartmentController::class, 'destroy'])->name('master.depts.destroy');
+
+// Master Equipment Type Routes
+Route::get('/master/equipments',[MasterEquipmentController::class,'index'])->name('master-equipment.index');
+
+Route::get('/type-datatable', [MasterEquipmentController::class, 'getTypeDatatable'])->name('master-equipment-type.datatable');
+Route::post('/type', [MasterEquipmentController::class, 'storeType'])->name('master-equipment-type.store');
+Route::get('/type/{id}', [MasterEquipmentController::class, 'showType'])->name('master-equipment-type.show');
+Route::delete('/type/{id}', [MasterEquipmentController::class, 'destroyType'])->name('master-equipment-type.destroy');
+
+// Master Equipment Routes
+Route::get('/equipment-datatable', [MasterEquipmentController::class, 'getEquipmentDatatable'])->name('master-equipment.datatable');
+Route::post('/equipment', [MasterEquipmentController::class, 'storeEquipment'])->name('master-equipment.store');
+Route::get('/equipment/{id}', [MasterEquipmentController::class, 'showEquipment'])->name('master-equipment.show');
+Route::delete('/equipment/{id}', [MasterEquipmentController::class, 'destroyEquipment'])->name('master-equipment.destroy');
+
 // master pasien
-Route::get('/master/patients', [MasterPatientController::class, 'index'])->name('patients.index');
-Route::get('/master/patients/data', [MasterPatientController::class, 'data'])->name('patients.data');
-Route::resource('/master/patients', MasterPatientController::class);
-Route::put('/master/patients/{id}', [MasterPatientController::class, 'update'])->name('patients.update');
+// Route::get('/master/patients', [MasterPatientController::class, 'index'])->name('patients.index');
+// Route::get('/master/patients/data', [MasterPatientController::class, 'data'])->name('patients.data');
+// Route::resource('/master/patients', MasterPatientController::class);
+// Route::put('/master/patients/{id}', [MasterPatientController::class, 'update'])->name('patients.update');
 
 // room booking
-Route::get('/kamar-kosong/bookings', [RoomBookingController::class, 'index'])->name('bookings.index');
-Route::post('/bookings', [RoomBookingController::class, 'store'])->name('bookings.store');
-Route::get('/bookings/data', [RoomBookingController::class, 'data'])->name('bookings.data');
-Route::delete('/bookings/{id}', [RoomBookingController::class, 'cancel'])->name('bookings.cancel');
-Route::post('/bookings/{id}/checkout', [RoomBookingController::class, 'checkout'])->name('bookings.checkout');
+// Route::get('/kamar-kosong/bookings', [RoomBookingController::class, 'index'])->name('bookings.index');
+// Route::post('/bookings', [RoomBookingController::class, 'store'])->name('bookings.store');
+// Route::get('/bookings/data', [RoomBookingController::class, 'data'])->name('bookings.data');
+// Route::delete('/bookings/{id}', [RoomBookingController::class, 'cancel'])->name('bookings.cancel');
+// Route::post('/bookings/{id}/checkout', [RoomBookingController::class, 'checkout'])->name('bookings.checkout');
 
 // validasi ga
-Route::get('/kamar-kosong/validasi', [ValidasiGAController::class, 'index'])->name('ga.rooms.index');
-Route::get('/kamar-kosong/validasi/datatable', [ValidasiGAController::class, 'datatable'])->name('ga.rooms.datatable');
-Route::post('/kamar-kosong/validasi/validasi', [ValidasiGAController::class, 'validateRoom'])->name('ga.rooms.validate');
+// Route::get('/kamar-kosong/validasi', [ValidasiGAController::class, 'index'])->name('ga.rooms.index');
+// Route::get('/kamar-kosong/validasi/datatable', [ValidasiGAController::class, 'datatable'])->name('ga.rooms.datatable');
+// Route::post('/kamar-kosong/validasi/validasi', [ValidasiGAController::class, 'validateRoom'])->name('ga.rooms.validate');
 
 // konfirmasi perawat
-Route::get('/kamar-kosong/konfirmasi', [KonfirmasiPerawatController::class, 'index'])->name('nurse.confirm.index');
-Route::get('/kamar-kosong/konfirmasi/datatable', [KonfirmasiPerawatController::class, 'datatable'])->name('nurse.confirm.datatable');
-Route::post('/kamar-kosong/konfirmasi/store', [KonfirmasiPerawatController::class, 'store'])->name('nurse.confirm.store');
+// Route::get('/kamar-kosong/konfirmasi', [KonfirmasiPerawatController::class, 'index'])->name('nurse.confirm.index');
+// Route::get('/kamar-kosong/konfirmasi/datatable', [KonfirmasiPerawatController::class, 'datatable'])->name('nurse.confirm.datatable');
+// Route::post('/kamar-kosong/konfirmasi/store', [KonfirmasiPerawatController::class, 'store'])->name('nurse.confirm.store');
 
 
 
@@ -360,7 +396,6 @@ Route::get('/zawa/qr', function () {
     $qrCodeImage = $qr['qrcode'] ?? null;
 
     // Langkah 4: Simpan id dan sessionId ke file .env
-    // Ini adalah langkah kunci yang akan menyimpan sesi secara permanen
     $envPath = base_path('.env');
     $envContent = File::get($envPath);
 
@@ -370,32 +405,37 @@ Route::get('/zawa/qr', function () {
 
     File::put($envPath, $envContent);
 
-    // Langkah 5: Tampilkan QR Code ke pengguna
-    // Sekarang, sesi sudah tersimpan di .env, jadi Anda hanya perlu menampilkan QR code
-    // untuk dipindai oleh pengguna.
     return view('zawa.qr', ['qr' => $qrCodeImage]);
 });
 
-Route::get('/zawa/qr/send', function() {
-    $response = Http::withHeaders([
-        'id' => Session::get('zawa_id'),
-        'session-id' => Session::get('zawa_session_id'),
-        'Accept' => '*/*',
-        'Content-Type' => 'application/json',
-    ])->post('https://api-zawa.azickri.com/message',[
-        'phone' => '6287889643945',
-        // 'group' => '6287889643945',
-        'type' => 'text',
-        'text' => 'TES WA
-        *ASKDNAKJSDNAS*
-        ~ANSDJNASJKDN~
-        _ASNKDJNASJDN_
-        ASDKJNASKDJNASJ',
-    ]);
- $data = $response->json();
+// Route::get('/zawa/qr/send', function() {
+//     $id = env('ZAWA_ID');
+//     $sessionId = env('ZAWA_SESSION_ID');
 
- return $data;
+//     $response = Http::withHeaders([
+//         // 'id' => Session::get('zawa_id'),
+//         // 'session-id' => Session::get('zawa_session_id'),
+//         'id' => $id,
+//         'session-id' => $sessionId,
+//         'Accept' => '*/*',
+//         'Content-Type' => 'application/json',
+//     ])->post('https://api-zawa.azickri.com/message',[
+//         'phone' => '6287889643945',
+//         // 'group' => '6287889643945',
+//         'type' => 'text',
+//         'text' => 'TES WA
+//         *ASKDNAKJSDNAS*
+//         ~ANSDJNASJKDN~
+//         _ASNKDJNASJDN_
+//         ASDKJNASKDJNASJ',
+//     ]);
+//  $data = $response->json();
 
-});
+//  return $data;
 
+// });
 
+Route::get('/zawa/create-session', [ZawaController::class, 'createSession']);
+Route::get('/zawa/check-status', [ZawaController::class, 'checkStatus']);
+Route::get('/zawa/qr/send', [ZawaController::class, 'sendTestNotification']);
+Route::get('/zawa/reconnect-session', [ZawaController::class, 'reconnectSession']);
