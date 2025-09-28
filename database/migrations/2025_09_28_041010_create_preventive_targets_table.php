@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_equipment_types', function (Blueprint $table) {
+        Schema::create('preventive_targets', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('needs_specialist')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_equipment_types');
+        Schema::dropIfExists('preventive_targets');
     }
 };

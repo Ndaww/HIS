@@ -13,6 +13,9 @@
             <li class="full-click {{ request()->is('master/rooms*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/rooms">Master Ruangan</a></li>
             <li class="full-click {{ request()->is('master/depts*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/depts">Master Department</a></li>
             <li class="full-click {{ request()->is('master/equipments*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/equipments">Master Equipment</a></li>
+            <li class="full-click {{ request()->is('master/users*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/users">Master User</a></li>
+            <li class="full-click {{ request()->is('master/technicians*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/technicians">Master Teknisi</a></li>
+            <li class="full-click {{ request()->is('master/specializations*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/specializations">Master Spesialisasi</a></li>
           </ul>
         </li>
         <li>
@@ -52,6 +55,31 @@
 
         <li>
           <div class="parent {{request()->is('preventive-task/*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+
+          <ul class="child-menu" style="{{ request()->is('preventive-task/equipment/*') ? 'display: block;' : '' }}">
+            {{-- equipment --}}
+            <div class="parent {{request()->is('preventive-task/equipment*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+                <i class="ri-sm ri-task-line"></i> Equipment <span class="arrow"><i class="ri ri-play-fill"></i></span>
+            </div>
+            <ul class="child-menu" style="{{ request()->is('preventive-task/equipment/*') ? 'display: block;' : '' }}">
+                @foreach ($equipmentSidebar as $item)
+                    <li class="full-click {{ request()->is('preventive-task/equipment/'.$item->id.'*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive-task/equipment/{{$item->id}}/form">{{$item->name}}</a></li>
+                @endforeach
+            </ul>
+
+            {{-- preventive --}}
+            <li class="full-click {{ request()->is('preventive/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/create">Buat Jadwal</a></li>
+            <li class="full-click {{ request()->is('preventive/task') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/task">Tugas Saya</a></li>
+            <li class="full-click {{ request()->is('preventive/history') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/history">History Tugas Saya</a></li>
+          </ul>
+
+        </li>
+
+        <li>
+          <div class="parent {{request()->is('preventive/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 

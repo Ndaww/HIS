@@ -9,10 +9,14 @@ use App\Http\Controllers\MasterRoomController;
 use App\Http\Controllers\PksController;
 use App\Http\Controllers\PreventiveEqController;
 use App\Http\Controllers\PreventiveTaskController;
+use App\Http\Controllers\PreventiveV2Controller;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomBookingController;
+use App\Http\Controllers\SpecializationController;
+use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketingV2Controller;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ValidasiGAController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\ZawaController;
@@ -230,6 +234,12 @@ Route::get('/check-preventive-status/{equipmentId}', [PreventiveEqController::cl
 Route::post('/preventive/store-task', [PreventiveEqController::class, 'storeTask'])->name('preventive-task-equipment.store-task');
 
 
+// Preventive V2
+Route::get('/preventive/v2/target/create', [PreventiveV2Controller::class, 'create'])->name('preventive-target.create');
+Route::post('/preventive/v2/target', [PreventiveV2Controller::class, 'store'])->name('preventive-target.store');
+
+
+
 // PKS
 // dept
 Route::get('/pks/create', [PksController::class, 'create']);
@@ -287,6 +297,41 @@ Route::post('/master/depts', [DepartmentController::class, 'store'])->name('mast
 Route::get('/master/depts/{department}', [DepartmentController::class, 'show'])->name('master.depts.show');
 Route::put('/master/depts/{department}', [DepartmentController::class, 'update'])->name('master.depts.update');
 Route::delete('/master/depts/{department}', [DepartmentController::class, 'destroy'])->name('master.depts.destroy');
+
+// master user
+Route::prefix('master/users')->name('users.')->group(function () {
+    Route::get('/', [UserController::class, 'index'])->name('index');
+    Route::get('/data', [UserController::class, 'data'])->name('data');
+    Route::get('/create', [UserController::class, 'create'])->name('create');
+    Route::post('/', [UserController::class, 'store'])->name('store');
+    Route::put('/{id}', [UserController::class, 'update'])->name('update');
+    Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+});
+
+// master teknisi
+Route::prefix('master/technicians')->group(function () {
+    Route::get('/', [TechnicianController::class, 'index'])->name('technicians.index');
+    Route::get('/data', [TechnicianController::class, 'data'])->name('technicians.data');
+    Route::get('/create', [TechnicianController::class, 'create'])->name('technicians.create');
+    Route::post('/', [TechnicianController::class, 'store'])->name('technicians.store');
+    Route::post('/create', [TechnicianController::class, 'store_tech'])->name('technicians.store-tech');
+    Route::put('/{id}', [TechnicianController::class, 'update'])->name('technicians.update');
+    Route::delete('/{id}', [TechnicianController::class, 'destroy'])->name('technicians.destroy');
+    Route::post('/{id}/assign-specialist', [TechnicianController::class, 'assignSpecialist'])->name('technicians.assign-specialist');
+
+});
+
+// master spesialisasi
+Route::prefix('master/specializations')->group(function () {
+    Route::get('/', [SpecializationController::class, 'index'])->name('specializations.index');
+    Route::get('/data', [SpecializationController::class, 'data'])->name('specializations.data');
+    Route::get('/create', [SpecializationController::class, 'create'])->name('specializations.create');
+    Route::post('', [SpecializationController::class, 'store'])->name('specializations.store');
+    Route::post('/{id}', [SpecializationController::class, 'update'])->name('specializations.update');
+    Route::delete('/{id}', [SpecializationController::class, 'destroy'])->name('specializations.destroy');
+});
+
+
 
 // Master Equipment Type Routes
 Route::get('/master/equipments',[MasterEquipmentController::class,'index'])->name('master-equipment.index');
