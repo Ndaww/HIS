@@ -198,6 +198,8 @@ class TechnicianController extends Controller
             'specialization_id' => $request->specialization_id,
         ]);
 
+        User::where('id',$id)->update(['is_specialist'=> true]);
+
         return response()->json(['message' => 'Spesialis berhasil ditambahkan untuk teknisi ini']);
     }
 

@@ -63,5 +63,11 @@ class User extends Authenticatable
         return $this->hasMany(TechnicianSpecialist::class, 'user_id');
     }
 
+    public function departmentHeaded()
+    {
+        return $this->hasOne(Department::class, 'head_id');
+    }
+
+
 
 }

@@ -1,17 +1,17 @@
 @extends('layouts.app')
-@section('title', 'Master Spesialis')
+@section('title', 'Master Spesialisasi')
 @section('main-content')
 <div class="header-breadcrumb">
-    <h2 id="page-title">Daftar Spesialis</h2>
-    <div class="breadcrumb" id="breadcrumb"> <span>Spesialis </span> / Daftar Spesialis </div>
+    <h2 id="page-title">Daftar Spesialisasi</h2>
+    <div class="breadcrumb" id="breadcrumb"> <span>Spesialisasi </span> / Daftar Spesialisasi </div>
 </div>
 
 <div class="card">
-    <div class="card-header">Daftar Spesialis</div>
+    <div class="card-header">Daftar Spesialisasi</div>
     <div class="card-body">
         <div class="mb-3">
             <button class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#createModal">
-                <i class="ri ri-add-large-fill"></i> Tambah Spesialis
+                <i class="ri ri-add-large-fill"></i> Tambah Spesialisasi
             </button>
 
         </div>
@@ -19,8 +19,9 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Nama Spesialis</th>
+                    <th>Nama Spesialisasi</th>
                     <th>Deskripsi</th>
+                    <th>Tipe Equipment</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -35,17 +36,26 @@
       @csrf
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Tambah Spesialis</h5>
+          <h5 class="modal-title">Tambah Spesialisasi</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row g-3">
           <div class="col-12">
-              <label>Nama Spesialis</label>
+              <label>Nama Spesialisasi</label>
               <input type="text" name="name" class="form-control" required>
           </div>
           <div class="col-12">
               <label>Deskripsi</label>
               <textarea name="description" class="form-control"></textarea>
+          </div>
+          <div class="col-12">
+              <label>Tipe Equipment</label>
+              <select name="type_id" id="type_id" class="form-select" required>
+                    <option value="">Pilih Tipe Equipment</option>
+                    @foreach ($equipments as $row)
+                        <option value="{{$row->id}}">{{$row->name}}</option>
+                    @endforeach
+              </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -61,21 +71,29 @@
   <div class="modal-dialog">
     <form id="edit-form" method="POST">
       @csrf
-      @method('PUT')
+      {{-- @method('PUT') --}}
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Edit Spesialis</h5>
+          <h5 class="modal-title">Edit Spesialisasi</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row g-3">
-          <input type="hidden" id="edit-id">
+          <input type="hidden" id="edit-id" name="id">
           <div class="col-md-12">
-              <label>Nama Spesialis</label>
+              <label>Nama Spesialisasi</label>
               <input type="text" name="name" class="form-control" id="edit-name">
           </div>
           <div class="col-md-12">
               <label>Deskripsi</label>
               <textarea name="description" class="form-control" id="edit-description"></textarea>
+          </div>
+          <div class="col-12">
+              <label>Tipe Equipment</label>
+              <select name="type_id" id="edit-type" class="form-select" required>
+                    @foreach ($equipments as $row)
+                        <option value="{{$row->id}}">{{$row->name}}</option>
+                    @endforeach
+              </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -104,18 +122,19 @@ $(document).ready(function () {
             {
                 extend: 'excelHtml5',
                 className: 'btn btn-success',
-                title: 'Daftar Spesialis'
+                title: 'Daftar Spesialisasi'
             },
             {
                 extend: 'print',
                 className: 'btn btn-primary',
-                title: 'Daftar Spesialis'
+                title: 'Daftar Spesialisasi'
             }
         ],
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name' },
             { data: 'description' },
+            { data: 'equipment_name', name: 'equipment_name' }, 
             { data: 'action', orderable: false, searchable: false }
         ]
     });
@@ -127,6 +146,7 @@ $(document).ready(function () {
         $('#edit-id').val(data.id);
         $('#edit-name').val(data.name);
         $('#edit-description').val(data.description);
+        $('#edit-type').val(data.type_id); 
 
         $('#editModal').modal('show');
     });

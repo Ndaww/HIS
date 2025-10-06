@@ -7,8 +7,10 @@ use App\Models\EquipmentPreventiveType;
 use App\Models\MasterEquipment;
 use App\Models\MasterEquipmentType;
 use App\Models\MasterPatient;
+use App\Models\Masterpmtask;
 use App\Models\MasterPreventive;
 use App\Models\MasterRoom;
+use App\Models\Specializations;
 use App\Models\Ticket;
 use App\Models\TicketSubstitution;
 use App\Models\User;
@@ -16,6 +18,7 @@ use Carbon\Carbon;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 
@@ -69,6 +72,18 @@ class DatabaseSeeder extends Seeder
                 'email' => "user$i@example.com",
                 'phone' => "87889643945",
                 'department_id' => $departments->random()->id,
+                'is_active' => true,
+            ]));
+        }
+
+        for ($i = 1; $i <= 5; $i++) {
+            $users->push(User::create([
+                'nik' => "Teknisi $i",
+                'password' => bcrypt(1234),
+                'name' => "Teknisi $i",
+                'email' => "teknisi$i@example.com",
+                'phone' => "87889643945",
+                'department_id' => 4,
                 'is_active' => true,
             ]));
         }
@@ -235,5 +250,93 @@ class DatabaseSeeder extends Seeder
                 'phone' => rand(0, 1) ? '08' . rand(1000000000, 9999999999) : null,
             ]);
         }
+
+        // Spesialisasi
+        Specializations::create([
+            'type_id' => 1,
+            'name' => 'AC Spesialist'
+        ]);
+
+        Specializations::create([
+            'type_id' => 2,
+            'name' => 'Genset Spesialist'
+        ]);
+
+
+        $tasksData = [
+            // Equipment Type ID: 1 (AC)
+            1 => [
+                [
+                    'task_name' => 'Cek Suhu Ruangan & Fungsi Dingin',
+                    'task_category' => 'I',
+                    'anomaly_threshold' => 'Suhu ruangan di atas batas nyaman (misal > 25°C) atau ada keluhan panas yang signifikan.',
+                ],
+                [
+                    'task_name' => 'Cek Kebocoran Air Unit Indoor',
+                    'task_category' => 'I',
+                    'anomaly_threshold' => 'Terlihat ada Air Menetes dari unit atau genangan air di bawahnya.',
+                ],
+                [
+                    'task_name' => 'Cek Kebersihan Filter Udara Depan',
+                    'task_category' => 'C',
+                    'anomaly_threshold' => 'Filter tampak menghitam atau tebal debu yang signifikan.',
+                ],
+            ],
+
+            // Equipment Type ID: 2 (Genset)
+            2 => [
+                [
+                    'task_name' => 'Cek Suara dan Getaran Mesin',
+                    'task_category' => 'I',
+                    'anomaly_threshold' => 'Suara mesin kasar/berubah, getaran berlebihan, atau ada Asap/Bau aneh saat test run.',
+                ],
+                [
+                    'task_name' => 'Cek Level Oli dan Bahan Bakar',
+                    'task_category' => 'L',
+                    'anomaly_threshold' => 'Level Oli mendekati batas \'Low\', atau BBM di bawah batas minimum aman (< 50%).',
+                ],
+                [
+                    'task_name' => 'Cek Kebocoran Cairan Area Bawah',
+                    'task_category' => 'C',
+                    'anomaly_threshold' => 'Ditemukan tetesan Oli/BBM/Air baru di lantai atau casing mesin.',
+                ],
+            ],
+
+            // Equipment Type ID: 3 (Infus Pump)
+            3 => [
+                [
+                    'task_name' => 'Cek Kondisi Fisik dan Kabel Unit',
+                    'task_category' => 'I',
+                    'anomaly_threshold' => 'Casing retak/pecah, kabel terkelupas, atau pin adaptor bengkok/longgar.',
+                ],
+                [
+                    'task_name' => 'Cek Status Baterai dan Fungsi Alarm',
+                    'task_category' => 'I',
+                    'anomaly_threshold' => 'Baterai tidak mengisi meskipun plugged in, atau Alarm tidak berfungsi saat simulasi sederhana.',
+                ],
+                [
+                    'task_name' => 'Pembersihan Casing Unit Luar',
+                    'task_category' => 'C',
+                    'anomaly_threshold' => 'Terlihat kotoran, debu tebal, atau noda yang bisa mengganggu fungsi/kebersihan medis.',
+                ],
+            ],
+        ];
+
+        $insertArray = [];
+        
+        foreach ($tasksData as $equipmentTypeId => $tasks) {
+            foreach ($tasks as $task) {
+                $insertArray[] = array_merge($task, [
+                    'equipment_type_id' => $equipmentTypeId,
+                    'frequency_type' => 'Shift',
+                    'responsible_role' => 'Teknisi Umum',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        DB::table('masterpmtasks')->insert($insertArray);
+
     }
 }

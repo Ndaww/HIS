@@ -17,4 +17,9 @@ class Specializations extends Model
         return $this->hasMany(TechnicianSpecialist::class, 'specialization_id');
     }
 
+    public function type()
+    {
+        return $this->belongsTo(MasterEquipmentType::class);
+    }
+
 }

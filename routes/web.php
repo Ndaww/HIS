@@ -5,8 +5,13 @@ use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MasterEquipmentController;
 use App\Http\Controllers\MasterPatientController;
+use App\Http\Controllers\MasterpmtaskController;
 use App\Http\Controllers\MasterRoomController;
 use App\Http\Controllers\PksController;
+use App\Http\Controllers\PmCheckRoundController;
+use App\Http\Controllers\PMFormHeaderController;
+use App\Http\Controllers\PmShiftScheduleController;
+use App\Http\Controllers\PmShiftTaskController;
 use App\Http\Controllers\PreventiveEqController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\PreventiveV2Controller;
@@ -22,6 +27,9 @@ use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\ZawaController;
 use App\Models\MasterEquipment;
 use App\Models\MasterPreventive;
+use App\Models\PMFormDetail;
+use App\Models\PMFormHeader;
+use App\Models\PmShiftTask;
 use App\Models\PreventiveTask;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
@@ -235,8 +243,54 @@ Route::post('/preventive/store-task', [PreventiveEqController::class, 'storeTask
 
 
 // Preventive V2
+Route::get('/preventive/v2/dashboard', [PreventiveV2Controller::class, 'index'])->name('preventive-v2.dashboard');
 Route::get('/preventive/v2/target/create', [PreventiveV2Controller::class, 'create'])->name('preventive-target.create');
 Route::post('/preventive/v2/target', [PreventiveV2Controller::class, 'store'])->name('preventive-target.store');
+Route::get('/preventive/v2/target/{target}/edit', [PreventiveV2Controller::class, 'edit'])->name('preventive-target.edit');
+Route::put('/preventive/v2/target/{target}', [PreventiveV2Controller::class, 'update'])->name('preventive-target.update');
+Route::delete('/preventive/v2/target/{target}', [PreventiveV2Controller::class, 'destroy'])->name('preventive-target.destroy');
+
+// Task preventive v2
+Route::get('/preventive/v2/task', [PMFormHeaderController::class, 'index'])->name('pm.index');
+Route::get('/preventive/v2/task/{scheduleId}', [PMFormHeaderController::class, 'create'])->name('pm.create');
+Route::get('/preventive/v2/tasks-data', [PMFormHeaderController::class, 'getTasksData'])->name('pm.tasks.data');
+Route::post('/preventive/v2/task', [PMFormHeaderController::class, 'store'])->name('pm.store');
+Route::get('/preventive/v2/history', [PMFormHeaderController::class, 'historyIndex'])->name('pm.history');
+Route::get('/preventive/v2/history-data', [PMFormHeaderController::class, 'getHistoryData'])->name('pm.get_history_data');
+Route::get('/preventive/v2/history/{headerId}', [PMFormHeaderController::class, 'showHistory'])->name('pm.show_history');
+Route::get('reports/preventive/v2', [PMFormHeaderController::class, 'reportIndex'])->name('pm.report');
+Route::get('reports/preventive/v2/report-data', [PMFormHeaderController::class, 'getReportData'])->name('pm.get_report_data');
+
+// Preventive Shift V2
+// Route::prefix('preventive/shift/rounds')->group(function () {
+//     Route::get('/', [PmCheckRoundController::class, 'index'])->name('pm_rounds.index'); 
+//     Route::get('/data', [PmCheckRoundController::class, 'data'])->name('pm_rounds.data');
+//     Route::get('/create', [PmCheckRoundController::class, 'create'])->name('pm_rounds.create');
+//     Route::get('/{round}', [PmCheckRoundController::class, 'show'])->name('pm_rounds.show');
+//     Route::post('/', [PmCheckRoundController::class, 'store'])->name('pm_rounds.store');
+//     Route::get('/{round}/execute', [PmCheckRoundController::class, 'execute'])->name('pm_rounds.execute'); 
+//     Route::post('/{round}/results', [PmCheckRoundController::class, 'saveResults'])->name('pm_rounds.save_results');
+//     Route::post('/{round}/complete', [PmCheckRoundController::class, 'completeRound'])->name('pm_rounds.complete_round');
+// });
+
+// jadwal shift
+Route::prefix('preventive/shift/schedule')->group(function () {
+    Route::get('/', [PmShiftScheduleController::class, 'index'])->name('pm_schedule.index'); 
+    Route::post('/', [PmShiftScheduleController::class, 'store'])->name('pm_schedule.store');
+});
+
+Route::get('preventive/shift/dashboard', [PmShiftTaskController::class, 'dashboard'])->name('pm_shift.dashboard'); 
+Route::get('preventive/shift/my-tasks', [PmShiftTaskController::class, 'index'])->name('pm_shift.index'); 
+Route::get('preventive/shift/my-tasks/create', [PmShiftTaskController::class, 'create'])->name('pm_shift.create'); 
+Route::post('/preventive/shift/store/my-tasks', [PmShiftTaskController::class, 'store'])->name('pm_shift.store'); 
+Route::get('/preventive/shift/my-tasks/edit', [PmShiftTaskController::class, 'edit'])->name('pm_shift.edit'); 
+Route::post('/preventive/shift/update', [PmShiftTaskController::class, 'update'])->name('pm_shift.update');
+Route::get('/preventive/shift/my-tasks/history', [PmShiftTaskController::class, 'history'])->name('pm_shift.history');
+Route::get('/preventive/shift/my-tasks/history/data', [PmShiftTaskController::class, 'historyData'])->name('pm_shift.history.data');
+
+
+
+
 
 
 
@@ -346,6 +400,19 @@ Route::get('/equipment-datatable', [MasterEquipmentController::class, 'getEquipm
 Route::post('/equipment', [MasterEquipmentController::class, 'storeEquipment'])->name('master-equipment.store');
 Route::get('/equipment/{id}', [MasterEquipmentController::class, 'showEquipment'])->name('master-equipment.show');
 Route::delete('/equipment/{id}', [MasterEquipmentController::class, 'destroyEquipment'])->name('master-equipment.destroy');
+
+// Master Task Routes
+Route::prefix('master/task')->group(function () {
+    Route::get('/', [MasterpmtaskController::class, 'index'])->name('pm_tasks.index');
+    Route::get('/data', [MasterPmTaskController::class, 'data'])->name('pm_tasks.data');
+    Route::get('/create', [MasterPmTaskController::class, 'create'])->name('pm_tasks.create'); // <--- ROUTE BARU
+    Route::post('/', [MasterPmTaskController::class, 'store'])->name('pm_tasks.store');
+    Route::get('/{task}/edit', [MasterPmTaskController::class, 'edit'])->name('pm_tasks.edit');
+    Route::put('/{task}', [MasterPmTaskController::class, 'update'])->name('pm_tasks.update');
+    Route::delete('/{task}', [MasterPmTaskController::class, 'destroy'])->name('pm_tasks.destroy');
+});
+
+
 
 // master pasien
 // Route::get('/master/patients', [MasterPatientController::class, 'index'])->name('patients.index');

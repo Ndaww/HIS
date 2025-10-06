@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('specializations', function (Blueprint $table) {
             $table->id();
+            $table->biginteger('type_id');
             $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->timestamps();

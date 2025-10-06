@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('serial_number')->unique();
             $table->foreignId('room_id');//->constrained('master_rooms');
             $table->foreignId('equipment_type_id');//->constrained('equipment_types');
+            $table->date('last_pm_date')->nullable();
             $table->timestamps();
         });
     }

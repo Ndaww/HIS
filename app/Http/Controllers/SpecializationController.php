@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\MasterEquipmentType;
 use App\Models\Specializations;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -13,7 +14,8 @@ class SpecializationController extends Controller
     public function index()
     {
         $specializations = Specializations::all();
-        return view('pages.master.specializations.index', compact('specializations'));
+        $equipments = MasterEquipmentType::all();
+        return view('pages.master.specializations.index', compact('specializations','equipments'));
     }
 
     public function data()
@@ -22,7 +24,13 @@ class SpecializationController extends Controller
 
         return DataTables::of($query)
             ->addIndexColumn()
+            ->addColumn('equipment_name', function ($row) {
+                return $row->type->name ?? '-'; 
+            })
             ->addColumn('action', function ($row) {
+                // $data_for_json = $row->toArray();
+                // $data_for_json['type_id'] = $row->type_id; 
+
                 return '
                     <button class="btn btn-sm btn-warning btn-edit" data-json=\''.json_encode($row).'\'>Edit</button>
                     <form action="'.route('specializations.destroy', $row->id).'" method="POST" class="form-delete" style="display:inline-block;">
@@ -46,9 +54,10 @@ class SpecializationController extends Controller
         $request->validate([
             'name' => 'required|unique:specializations,name',
             'description' => 'nullable',
+            'type_id' => 'nullable'
         ]);
 
-        Specializations::create($request->only(['name', 'description']));
+        Specializations::create($request->only(['name', 'description','type_id']));
 
         return redirect()->route('specializations.index')->with('success', 'Spesialis berhasil ditambahkan');
     }
@@ -60,9 +69,10 @@ class SpecializationController extends Controller
         $request->validate([
             'name' => 'required|unique:specializations,name,'.$id,
             'description' => 'nullable',
+            'type_id' => 'nullable'
         ]);
 
-        $specialization->update($request->only(['name', 'description']));
+        $specialization->update($request->only(['name', 'description','type_id']));
 
         return response()->json(['message' => 'Spesialis berhasil diperbarui']);
     }
@@ -72,7 +82,7 @@ class SpecializationController extends Controller
         $specialization = Specializations::findOrFail($id);
         $specialization->delete();
 
-        return redirect()->route('specializations.index')->with('success', 'Spesialis berhasil dihapus');
+        return redirect()->route('specializations.index')->with('success', 'Spesialisasi berhasil dihapus');
     }
 
 }
