@@ -91,6 +91,11 @@ class TechnicianController extends Controller
                 <button class="btn btn-sm btn-info btn-add-specialist"
             data-id="'.$row->id.'"
             data-name="'.$row->name.'">Tambah Spesialis</button>
+            <button class="btn btn-warning btn-sm btn-remove-specialist" 
+                data-id="'. $row->id .'" 
+                data-name="'. $row->name .'">
+            <i class="ri ri-user-unfollow-line"></i> Hapus Spesialis
+        </button>
             ';
         })
 
@@ -202,6 +207,21 @@ class TechnicianController extends Controller
 
         return response()->json(['message' => 'Spesialis berhasil ditambahkan untuk teknisi ini']);
     }
+
+    public function getSpecializations(User $user) {
+        // return $user->technicianSpecialists()->select('id', 'name')->get();
+        return $user->specializations()->select('specializations.id', 'specializations.name')->get();
+
+    }
+
+    public function removeSpecialist(Request $request, User $user)
+    {
+        $user->specializations()->detach($request->specialization_id);
+
+        return response()->json(['message' => 'Spesialisasi berhasil dihapus']);
+    }
+
+
 
 
 }

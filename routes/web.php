@@ -40,7 +40,20 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
+Route::get('/storage/attachments/{filename}', function ($filename) {
+    $path = storage_path('app/public/attachments/' . $filename);
+
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+
+    return Response::make($file, 200)->header("Content-Type", $type);
+});
 
 Route::get('/', function () {
     // return view('layouts.app');
@@ -372,7 +385,8 @@ Route::prefix('master/technicians')->group(function () {
     Route::put('/{id}', [TechnicianController::class, 'update'])->name('technicians.update');
     Route::delete('/{id}', [TechnicianController::class, 'destroy'])->name('technicians.destroy');
     Route::post('/{id}/assign-specialist', [TechnicianController::class, 'assignSpecialist'])->name('technicians.assign-specialist');
-
+    Route::get('/{user}/specializations', [TechnicianController::class, 'getSpecializations']);
+    Route::post('/{user}/remove-specialist', [TechnicianController::class, 'removeSpecialist']);
 });
 
 // master spesialisasi

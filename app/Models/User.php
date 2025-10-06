@@ -68,6 +68,15 @@ class User extends Authenticatable
         return $this->hasOne(Department::class, 'head_id');
     }
 
+    public function specializations()
+    {
+        return $this->belongsToMany(
+            specializations::class, // nama model spesialisasi
+            'technician_specialists',           // nama tabel pivot
+            'user_id',                          // foreign key di pivot untuk user
+            'specialization_id'                 // foreign key di pivot untuk specialization
+        );
+    }
 
 
 }

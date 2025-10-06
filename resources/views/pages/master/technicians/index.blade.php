@@ -90,6 +90,27 @@
     </form>
   </div>
 </div>
+
+{{-- Modal Hapus Spesialis --}}
+<div class="modal fade" id="removeSpecialistModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Hapus Spesialisasi dari <span id="remove-user-name"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group" id="user-specializations-list">
+          {{-- Spesialisasi akan di-load via AJAX --}}
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @section('js')
@@ -162,28 +183,6 @@ $(document).ready(function () {
         });
     });
 
-    // Hapus Spesialis
-    $('#specializations-table').on('click', '.btn-delete', function() {
-        const id = $(this).data('id');
-        Swal.fire({
-            title: 'Yakin hapus?',
-            icon: 'warning',
-            showCancelButton: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/master/specializations/${id}`,
-                    method: 'DELETE',
-                    data: {_token: '{{ csrf_token() }}'},
-                    success: function(res) {
-                        Swal.fire('Berhasil', res.message, 'success');
-                        specTable.ajax.reload();
-                    }
-                });
-            }
-        });
-    });
-
     // buka modal assign
     $('#technicians-table').on('click', '.btn-add-specialist', function () {
         const userId = $(this).data('id');
@@ -210,12 +209,83 @@ $(document).ready(function () {
             success: function (res) {
                 Swal.fire('Berhasil', res.message, 'success');
                 $('#assignSpecialistModal').modal('hide');
+                table.ajax.reload();
             },
             error: function () {
                 Swal.fire('Gagal', 'Terjadi kesalahan', 'error');
             }
         });
     });
+
+    // buka modal hapus spesialis
+    $('#technicians-table').on('click', '.btn-remove-specialist', function () {
+        const userId = $(this).data('id');
+        const userName = $(this).data('name');
+        
+        $('#remove-user-name').text(userName);
+
+        // load spesialisasi user via AJAX
+        $.ajax({
+            url: `/master/technicians/${userId}/specializations`,
+            method: 'GET',
+            success: function(res) {
+                const list = $('#user-specializations-list');
+                list.empty();
+                if(res.length === 0) {
+                    list.append('<li class="list-group-item">Belum ada spesialisasi</li>');
+                } else {
+                    res.forEach(function(spec){
+                        const item = $(`
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                ${spec.name}
+                                <button class="btn btn-danger btn-sm btn-delete-spec" data-user-id="${userId}" data-spec-id="${spec.id}">
+                                    Hapus
+                                </button>
+                            </li>
+                        `);
+                        list.append(item);
+                    });
+                }
+                $('#removeSpecialistModal').modal('show');
+            },
+            error: function() {
+                Swal.fire('Gagal', 'Tidak bisa memuat spesialisasi', 'error');
+            }
+        });
+    });
+
+    // hapus spesialisasi
+    $('#user-specializations-list').on('click', '.btn-delete-spec', function() {
+        const userId = $(this).data('user-id');
+        const specId = $(this).data('spec-id');
+        const btn = $(this);
+
+        Swal.fire({
+            title: 'Yakin hapus spesialisasi ini?',
+            icon: 'warning',
+            showCancelButton: true,
+        }).then((result) => {
+            if(result.isConfirmed) {
+                $.ajax({
+                    url: `/master/technicians/${userId}/remove-specialist`,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        specialization_id: specId
+                    },
+                    success: function(res) {
+                        Swal.fire('Berhasil', res.message, 'success');
+                        btn.closest('li').remove();
+                        table.ajax.reload();
+                    },
+                    error: function() {
+                        Swal.fire('Gagal', 'Terjadi kesalahan', 'error');
+                    }
+                });
+            }
+        });
+    });
+
 
 });
 </script>
