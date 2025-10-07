@@ -71,7 +71,7 @@ class User extends Authenticatable
     public function specializations()
     {
         return $this->belongsToMany(
-            specializations::class, // nama model spesialisasi
+            Specializations::class, // nama model spesialisasi
             'technician_specialists',           // nama tabel pivot
             'user_id',                          // foreign key di pivot untuk user
             'specialization_id'                 // foreign key di pivot untuk specialization
