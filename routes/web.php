@@ -15,6 +15,7 @@ use App\Http\Controllers\PmShiftTaskController;
 use App\Http\Controllers\PreventiveEqController;
 use App\Http\Controllers\PreventiveTaskController;
 use App\Http\Controllers\PreventiveV2Controller;
+use App\Http\Controllers\QRController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomBookingController;
 use App\Http\Controllers\SpecializationController;
@@ -274,29 +275,31 @@ Route::get('/preventive/v2/history/{headerId}', [PMFormHeaderController::class, 
 Route::get('reports/preventive/v2', [PMFormHeaderController::class, 'reportIndex'])->name('pm.report');
 Route::get('reports/preventive/v2/report-data', [PMFormHeaderController::class, 'getReportData'])->name('pm.get_report_data');
 
+Route::get('/preventive/v2/history-item/{id}', [PMFormHeaderController::class, 'showHistoryEquipment'])->name('pm.history-item');
+
 // Preventive Shift V2
 // Route::prefix('preventive/shift/rounds')->group(function () {
-//     Route::get('/', [PmCheckRoundController::class, 'index'])->name('pm_rounds.index'); 
+//     Route::get('/', [PmCheckRoundController::class, 'index'])->name('pm_rounds.index');
 //     Route::get('/data', [PmCheckRoundController::class, 'data'])->name('pm_rounds.data');
 //     Route::get('/create', [PmCheckRoundController::class, 'create'])->name('pm_rounds.create');
 //     Route::get('/{round}', [PmCheckRoundController::class, 'show'])->name('pm_rounds.show');
 //     Route::post('/', [PmCheckRoundController::class, 'store'])->name('pm_rounds.store');
-//     Route::get('/{round}/execute', [PmCheckRoundController::class, 'execute'])->name('pm_rounds.execute'); 
+//     Route::get('/{round}/execute', [PmCheckRoundController::class, 'execute'])->name('pm_rounds.execute');
 //     Route::post('/{round}/results', [PmCheckRoundController::class, 'saveResults'])->name('pm_rounds.save_results');
 //     Route::post('/{round}/complete', [PmCheckRoundController::class, 'completeRound'])->name('pm_rounds.complete_round');
 // });
 
 // jadwal shift
 Route::prefix('preventive/shift/schedule')->group(function () {
-    Route::get('/', [PmShiftScheduleController::class, 'index'])->name('pm_schedule.index'); 
+    Route::get('/', [PmShiftScheduleController::class, 'index'])->name('pm_schedule.index');
     Route::post('/', [PmShiftScheduleController::class, 'store'])->name('pm_schedule.store');
 });
 
-Route::get('preventive/shift/dashboard', [PmShiftTaskController::class, 'dashboard'])->name('pm_shift.dashboard'); 
-Route::get('preventive/shift/my-tasks', [PmShiftTaskController::class, 'index'])->name('pm_shift.index'); 
-Route::get('preventive/shift/my-tasks/create', [PmShiftTaskController::class, 'create'])->name('pm_shift.create'); 
-Route::post('/preventive/shift/store/my-tasks', [PmShiftTaskController::class, 'store'])->name('pm_shift.store'); 
-Route::get('/preventive/shift/my-tasks/edit', [PmShiftTaskController::class, 'edit'])->name('pm_shift.edit'); 
+Route::get('preventive/shift/dashboard', [PmShiftTaskController::class, 'dashboard'])->name('pm_shift.dashboard');
+Route::get('preventive/shift/my-tasks', [PmShiftTaskController::class, 'index'])->name('pm_shift.index');
+Route::get('preventive/shift/my-tasks/create', [PmShiftTaskController::class, 'create'])->name('pm_shift.create');
+Route::post('/preventive/shift/store/my-tasks', [PmShiftTaskController::class, 'store'])->name('pm_shift.store');
+Route::get('/preventive/shift/my-tasks/edit', [PmShiftTaskController::class, 'edit'])->name('pm_shift.edit');
 Route::post('/preventive/shift/update', [PmShiftTaskController::class, 'update'])->name('pm_shift.update');
 Route::get('/preventive/shift/my-tasks/history', [PmShiftTaskController::class, 'history'])->name('pm_shift.history');
 Route::get('/preventive/shift/my-tasks/history/data', [PmShiftTaskController::class, 'historyData'])->name('pm_shift.history.data');
@@ -403,6 +406,7 @@ Route::prefix('master/specializations')->group(function () {
 
 // Master Equipment Type Routes
 Route::get('/master/equipments',[MasterEquipmentController::class,'index'])->name('master-equipment.index');
+Route::get('/master/equipments/qr/{id}',[QRController::class,'index']);
 
 Route::get('/type-datatable', [MasterEquipmentController::class, 'getTypeDatatable'])->name('master-equipment-type.datatable');
 Route::post('/type', [MasterEquipmentController::class, 'storeType'])->name('master-equipment-type.store');
@@ -565,3 +569,6 @@ Route::get('/zawa/create-session', [ZawaController::class, 'createSession']);
 Route::get('/zawa/check-status', [ZawaController::class, 'checkStatus']);
 Route::get('/zawa/qr/send', [ZawaController::class, 'sendTestNotification']);
 Route::get('/zawa/reconnect-session', [ZawaController::class, 'reconnectSession']);
+
+
+Route::get('/qr',[QRController::class,'index']);

@@ -61,7 +61,7 @@ class TechnicianController extends Controller
 {
     // 1. Eager Load Relasi untuk menghindari N+1 problem
     $query = User::with('technicianSpecialists.specialization')
-                ->where('department_id', 4);
+                ->where('department_id', 4)->orwhere('nik','admin');
 
     return DataTables::of($query)
         ->addIndexColumn()
@@ -91,8 +91,8 @@ class TechnicianController extends Controller
                 <button class="btn btn-sm btn-info btn-add-specialist"
             data-id="'.$row->id.'"
             data-name="'.$row->name.'">Tambah Spesialis</button>
-            <button class="btn btn-warning btn-sm btn-remove-specialist" 
-                data-id="'. $row->id .'" 
+            <button class="btn btn-warning btn-sm btn-remove-specialist"
+                data-id="'. $row->id .'"
                 data-name="'. $row->name .'">
             <i class="ri ri-user-unfollow-line"></i> Hapus Spesialis
         </button>

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Yajra\DataTables\Facades\DataTables;
 
 class PMFormHeaderController extends Controller
@@ -24,12 +25,12 @@ class PMFormHeaderController extends Controller
     public function index(Request $request)
     {
         $currentTechnicianId = auth()->user()->id; // Ganti dengan logika otentikasi yang sesuai, misalnya: auth()->user()->id
-        
+
         // Ambil jadwal yang statusnya 'Scheduled' untuk teknisi ini
         // $schedules = PreventiveSchedulesV2::where('status', 'Scheduled')
         //                                 ->where('technician_id', $currentTechnicianId)
         //                                 // Anda bisa menambahkan eager loading jika dibutuhkan
-        //                                 // ->with(['equipment', 'technician']) 
+        //                                 // ->with(['equipment', 'technician'])
         //                                 ->orderBy('scheduled_date', 'asc')
         //                                 ->get();
 
@@ -38,17 +39,17 @@ class PMFormHeaderController extends Controller
 
     public function getTasksData(Request $request)
     {
-        $currentTechnicianId = auth()->user()->id; 
-        
+        $currentTechnicianId = auth()->user()->id;
+
         $schedules = PreventiveSchedulesV2::where('status', 'Scheduled')
                                          ->where('technician_id', $currentTechnicianId)
-                                         ->with('equipment') 
+                                         ->with('equipment')
                                          ->orderBy('scheduled_date', 'asc');
 
         return DataTables::of($schedules)
-            ->addIndexColumn() 
+            ->addIndexColumn()
             ->addColumn('name_equipment', function($schedule) {
-                return $schedule->equipment ? $schedule->equipment->name : '-'; 
+                return $schedule->equipment ? $schedule->equipment->name : '-';
             })
             ->addColumn('target_period', function($schedule) {
                 return $schedule->target_month . '/' . $schedule->target_year;
@@ -64,12 +65,12 @@ class PMFormHeaderController extends Controller
                 return '<span class="badge '.$badge.'">'.$schedule->status.'</span>';
             })
             ->addColumn('action', function($schedule) {
-                $url = route('pm.create', $schedule->id); 
+                $url = route('pm.create', $schedule->id);
                 return '<a href="'.$url.'" class="btn btn-sm btn-success">
                             <i class="fas fa-file-alt"></i> Isi Form PM
                         </a>';
             })
-            ->rawColumns(['status', 'action']) 
+            ->rawColumns(['status', 'action'])
             ->make(true);
     }
 
@@ -81,21 +82,21 @@ class PMFormHeaderController extends Controller
     {
         try {
             DB::beginTransaction();
-            $schedule = PreventiveSchedulesV2::findOrFail($scheduleId); 
+            $schedule = PreventiveSchedulesV2::findOrFail($scheduleId);
 
             DB::commit();
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Failed to prepare PM form for schedule ID " . $scheduleId . ": " . $e->getMessage()); 
-            
+            Log::error("Failed to prepare PM form for schedule ID " . $scheduleId . ": " . $e->getMessage());
+
             return back()->with('error', 'Gagal menyiapkan formulir PM. Jadwal tidak ditemukan atau error database: Cek log untuk detail.');
         }
-        
+
         $schedule->load(['equipment', 'technician']);
-        $details = []; 
-        
-        return view('pages.preventive-v2.task.create', compact('schedule', 'details')); 
+        $details = [];
+
+        return view('pages.preventive-v2.task.create', compact('schedule', 'details'));
     }
 
     /**
@@ -107,16 +108,16 @@ class PMFormHeaderController extends Controller
         $request->validate([
             'schedule_id' => 'required|exists:preventive_schedules_v2_s,id',
             'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time', 
+            'end_time' => 'required|date_format:H:i|after:start_time',
             'overall_result' => ['required', Rule::in(['Baik', 'Perbaikan Minor', 'Tindak Lanjut'])],
             'notes' => 'nullable|string',
 
             // Validasi untuk New Details (Baris Input Fleksibel / Default)
-            'new_details' => 'required|array', 
+            'new_details' => 'required|array',
             'new_details.*.task_description' => 'required_with:new_details|string|max:255',
             'new_details.*.standard_value' => 'nullable|string|max:100',
             'new_details.*.actual_value' => 'nullable|string|max:100',
-            'new_details.*.pm_status' => ['required_with:new_details', Rule::in(['OK', 'Not OK', 'Adjusted'])], 
+            'new_details.*.pm_status' => ['required_with:new_details', Rule::in(['OK', 'Not OK', 'Adjusted'])],
             'new_details.*.pm_notes' => 'nullable|string|max:255',
         ], [
             'end_time.after' => 'Waktu selesai harus lebih lambat dari waktu mulai.',
@@ -162,7 +163,7 @@ class PMFormHeaderController extends Controller
                         ];
                     }
                 }
-                
+
                 // Gunakan insert untuk performa yang lebih baik
                 if (!empty($detailsToInsert)) {
                     PmFormDetail::insert($detailsToInsert);
@@ -177,12 +178,12 @@ class PMFormHeaderController extends Controller
 
             DB::commit();
 
-            return redirect()->route('pm.index') 
+            return redirect()->route('pm.index')
                              ->with('success', 'Formulir Preventive Maintenance berhasil disimpan dan jadwal telah diselesaikan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Store PM Form Failed: " . $e->getMessage()); 
+            Log::error("Store PM Form Failed: " . $e->getMessage());
             return back()->withInput()
                          ->with('error', 'Terjadi kesalahan saat menyimpan data PM. Silakan coba lagi. Detail error ada di log.');
         }
@@ -222,7 +223,7 @@ class PMFormHeaderController extends Controller
 
     public function historyIndex(Request $request)
     {
-        return view('pages.preventive-v2.task.history'); 
+        return view('pages.preventive-v2.task.history');
     }
 
         public function getHistoryData(Request $request)
@@ -254,7 +255,7 @@ class PMFormHeaderController extends Controller
                     $start = Carbon::parse($header->start_time);
                     $end = Carbon::parse($header->end_time);
                     $diff = $start->diff($end);
-                    
+
                     $duration = '';
                     if ($diff->h > 0) {
                          $duration .= $diff->h . ' jam ';
@@ -268,7 +269,7 @@ class PMFormHeaderController extends Controller
                 }
             })
             ->addColumn('action', function($header) {
-                $url = route('pm.show_history', $header->id); 
+                $url = route('pm.show_history', $header->id);
                 return '<a href="'.$url.'" class="btn btn-sm btn-info text-white">
                             <i class="ri-search-line"></i> Detail
                         </a>';
@@ -284,20 +285,29 @@ class PMFormHeaderController extends Controller
             $header = PmFormHeader::with(['equipment', 'technician', 'details'])
                         ->findOrFail($headerId);
 
-            return view('pages.preventive-v2.task.show_history', compact('header')); 
+            return view('pages.preventive-v2.task.show_history', compact('header'));
 
         } catch (\Exception $e) {
-            Log::error("Failed to display PM history detail for header ID " . $headerId . ": " . $e->getMessage()); 
-            
+            Log::error("Failed to display PM history detail for header ID " . $headerId . ": " . $e->getMessage());
+
             return back()->with('error', 'Gagal memuat detail formulir PM. Data tidak ditemukan: Cek log untuk detail.');
         }
+    }
+
+    public function showHistoryEquipment($id)
+    {
+        $histories = PMFormHeader::where('equipment_id',$id)->get();
+        $equipments = MasterEquipment::where('id',$id)->get()[0];
+        // dd(empty($histories));
+
+        return view('pages.preventive-v2.task.show_history_equipment', compact('histories','equipments'));
     }
 
     public function reportIndex()
     {
         $technicians = User::whereIn('id', PmFormHeader::pluck('technician_id')->unique())->get();
         $equipmentList = MasterEquipment::whereIn('id', PmFormHeader::pluck('equipment_id')->unique())->get();
-        
+
         return view('pages.preventive-v2.task.report', compact('technicians', 'equipmentList'));
     }
 
@@ -313,7 +323,7 @@ class PMFormHeaderController extends Controller
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('pm_date', [$request->start_date, $request->end_date]);
         }
-        
+
         // 2. Filter Teknisi (Technician)
         if ($request->filled('technician_id')) {
             $query->where('technician_id', $request->technician_id);
@@ -346,7 +356,7 @@ class PMFormHeaderController extends Controller
                     $start = Carbon::parse($header->start_time);
                     $end = Carbon::parse($header->end_time);
                     $diff = $start->diff($end);
-                    
+
                     $duration = '';
                     if ($diff->h > 0) { $duration .= $diff->h . ' jam '; }
                     if ($diff->i > 0) { $duration .= $diff->i . ' menit'; }
@@ -360,7 +370,7 @@ class PMFormHeaderController extends Controller
                 return \Illuminate\Support\Str::limit($header->notes, 50, '...');
             })
             ->addColumn('action', function($header) {
-                $url = route('pm.show_history', $header->id); 
+                $url = route('pm.show_history', $header->id);
                 return '<a href="'.$url.'" class="btn btn-sm btn-info text-white">
                             <i class="ri-search-line"></i> Detail
                         </a>';

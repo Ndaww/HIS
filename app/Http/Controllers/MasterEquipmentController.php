@@ -123,6 +123,7 @@ class MasterEquipmentController extends Controller
                 ->addColumn('action', function($row){
                     $btn = '<a href="javascript:void(0)" data-id="'.$row->id.'" data-toggle="tooltip" data-original-title="Edit" class="edit-equipment btn btn-primary btn-sm mx-1">Edit</a>';
                     $btn .= '<a href="javascript:void(0)" data-id="'.$row->id.'" data-original-title="Delete" class="delete-equipment btn btn-danger btn-sm mx-1">Hapus</a>';
+                    $btn .= '<a href="/master/equipments/qr/'.$row->id.'" class="btn btn-success btn-sm mx-1">SHOW QR</a>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
