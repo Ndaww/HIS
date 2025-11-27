@@ -21,7 +21,7 @@
         </li>
         @endif
         <li>
-          <div class="parent {{request()->is('ticketing*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+          {{-- <div class="parent {{request()->is('ticketing*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-ticket-line"></i> Ticketing <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 
@@ -30,7 +30,7 @@
             <li class="full-click {{ request()->is('ticketing') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing">Tiket Saya</a></li>
             <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li>
           </ul>
-        </li>
+        </li> --}}
 
         <li>
           <div class="parent {{request()->is('ticket/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
@@ -56,14 +56,14 @@
         </li> --}}
 
         @if(auth()->user()->id == 1 || auth()->user()->department_id == 4 )
-        <li>
+        {{-- <li>
           <div class="parent {{request()->is('preventive-task/*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 
 
           <ul class="child-menu" style="{{ request()->is('preventive-task/equipment/*') ? 'display: block;' : '' }}">
-            {{-- equipment --}}
+            {{-- equipment 
             <div class="parent {{request()->is('preventive-task/equipment*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
                 <i class="ri-sm ri-task-line"></i> Equipment <span class="arrow"><i class="ri ri-play-fill"></i></span>
             </div>
@@ -73,7 +73,7 @@
                 @endforeach
             </ul>
 
-            {{-- preventive --}}
+            {{-- preventive 
             @if (auth()->user()->id == 1 || auth()->user()->departmentHeaded)
             <li class="full-click {{ request()->is('preventive/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/create">Buat Jadwal</a></li>
             @endif
@@ -81,7 +81,7 @@
             <li class="full-click {{ request()->is('preventive/history') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive/history">History Tugas Saya</a></li>
           </ul>
 
-        </li>
+        </li> --}}
 
         <li>
           <div class="parent {{ request()->is('preventive/shift*') || request()->is('preventive/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
@@ -91,14 +91,14 @@
 
           <ul class="child-menu" style="{{ request()->is('preventive/shift*') || request()->is('preventive/v2*') ? 'display: block;' : '' }}">
             {{-- equipment --}}
-            {{-- <div class="parent {{request()->is('preventive/v2/equipment*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+            <div class="parent {{request()->is('preventive/v2/equipment*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
                 <i class="ri-sm ri-task-line"></i> Equipment <span class="arrow"><i class="ri ri-play-fill"></i></span>
             </div>
             <ul class="child-menu" style="{{ request()->is('preventive/v2/equipment/*') ? 'display: block;' : '' }}">
                 @foreach ($equipmentSidebar as $item)
                     <li class="full-click {{ request()->is('preventive/v2/equipment/'.$item->id.'*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/preventive-task/equipment/{{$item->id}}/form">{{$item->name}}</a></li>
                 @endforeach
-            </ul> --}}
+            </ul>
 
             {{-- Rutin Per Shift --}}
             <div class="parent {{ request()->is('preventive/shift*') ? 'active open' : '' }}" onclick="toggleChildMenu(this)">

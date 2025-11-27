@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ asset('/assets/bootstrap-5.0.2/css/bootstrap.min.css') }}">
   <style>
     body {
-      background-color: #FFFFFF;
+      background-color: #e9f7ef;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -15,13 +15,13 @@
     }
 
     .login-card {
-      max-width: 720px;
+      max-width: 960px;
       width: 100%;
       display: flex;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 0 20px rgba(0, 128, 0, 0.1);
-      background-color: #EAF5EF;
+      background-color: white;
     }
 
     .login-left {
@@ -93,7 +93,7 @@
 <body>
   <div class="login-card">
     <!-- KIRI -->
-    {{-- <div class="login-left">
+    <div class="login-left">
       <h2>Selamat Datang Kembali!</h2>
       <p>
         Terima kasih telah menjadi bagian dari pelayanan kami.<br />
@@ -101,20 +101,19 @@
       </p>
       <img src="{{ asset('/assets/img/welcome.svg') }}" alt="Gambar Selamat Datang" width="100%">
 
-    </div> --}}
+    </div>
 
     <!-- KANAN -->
     <div class="login-right">
       <div class="text-center mb-4">
         <h3 class="fw-bold">Login Page</h3>
-        <img src="{{ asset('/assets/img/logo_login.png') }}" alt="Logo" width="30%">
-        {{-- <p class="text-muted">Masukkan Username dan kata sandi Anda</p> --}}
+        <p class="text-muted">Masukkan NIK dan kata sandi Anda</p>
       </div>
       <form method="POST" action="/login">
         @csrf
         <div class="mb-3">
-          <label for="nik" class="form-label">Username</label>
-          <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan Username" required />
+          <label for="nik" class="form-label">NIK</label>
+          <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan NIK" required />
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Kata Sandi</label>

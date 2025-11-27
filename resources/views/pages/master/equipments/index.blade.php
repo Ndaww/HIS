@@ -199,6 +199,7 @@
                         icon: 'success'
                     });
                     $('#save-type-btn').html('Simpan');
+                    window.location.reload();
                 },
                 error: function (data) {
                     console.log('Error:', data);
@@ -235,6 +236,7 @@
                                 'Data telah berhasil dihapus.',
                                 'success'
                             );
+                            window.location.reload();
                         },
                         error: function (data) {
                             console.log('Error:', data);
