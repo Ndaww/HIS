@@ -3,17 +3,19 @@
       <hr>
       <ul>
         <li class="menu-item full-click {{request()->is('dashboard*') ? 'active open' : ''}}"><a class="text-decoration-none text-black" href="/dashboard"><i class="ri-sm ri-dashboard-line"></i> Dashboard</a></li>
+        @if(auth()->user()->hasMenu(1))
         <li>
           <div class="parent {{request()->is('master*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-book-line"></i> Master <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
-         @if(auth()->user()->id == 1 || auth()->user()->departmentHeaded)
+         {{-- @if(auth()->user()->id == 1 || auth()->user()->departmentHeaded) --}}
           <ul class="child-menu" style="{{ request()->is('master*') ? 'display: block;' : '' }}">
             {{-- <li class="full-click {{ request()->is('master/patients*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/patients">Master Pasien</a></li> --}}
             <li class="full-click {{ request()->is('master/rooms*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/rooms">Master Ruangan</a></li>
             <li class="full-click {{ request()->is('master/depts*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/depts">Master Department</a></li>
             <li class="full-click {{ request()->is('master/equipments*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/equipments">Master Equipment</a></li>
             <li class="full-click {{ request()->is('master/users*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/users">Master User</a></li>
+            <li class="full-click {{ request()->is('master/akses*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/akses">Master Akses</a></li>
             <li class="full-click {{ request()->is('master/technicians*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/technicians">Master Teknisi</a></li>
             <li class="full-click {{ request()->is('master/specializations*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/specializations">Master Spesialisasi</a></li>
             <li class="full-click {{ request()->is('master/task*') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/master/task">Master Task (Shift)</a></li>
@@ -32,6 +34,7 @@
           </ul>
         </li> --}}
 
+        @if(auth()->user()->hasMenu(2))
         <li>
           <div class="parent {{request()->is('ticket/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-ticket-line"></i> Ticketing V2 <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -43,6 +46,7 @@
             <li class="full-click {{ request()->is('ticket/v2/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/dept">Semua Tiket</a></li>
           </ul>
         </li>
+        @endif
         {{-- <li>
           <div class="parent {{request()->is('preventive*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -55,7 +59,8 @@
           </ul>
         </li> --}}
 
-        @if(auth()->user()->id == 1 || auth()->user()->department_id == 4 )
+        {{-- @if(auth()->user()->id == 1 || auth()->user()->department_id == 4 ) --}}
+        @if(auth()->user()->hasMenu(3))
         {{-- <li>
           <div class="parent {{request()->is('preventive-task/*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-task-line"></i> Preventive <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -157,6 +162,8 @@
           </ul>
         </li> --}}
         @endif
+
+        @if(auth()->user()->hasMenu(4))
         <li>
           <div class="parent {{request()->is('reports*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-folder-5-line"></i> Laporan <span class="arrow"><i class="ri ri-play-fill"></i></span>
@@ -171,7 +178,10 @@
             {{-- <li class="full-click {{ request()->is('ticketing/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticketing/dept">Semua Tiket</a></li> --}}
           </ul>
         </li>
-        @if (auth()->user()->id == 1)
+        @endif
+
+        {{-- @if (auth()->user()->id == 1) --}}
+        @if(auth()->user()->hasMenu(5))
             <li>
           <div class="parent {{request()->is('zawa*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-whatsapp-fill"></i> ZAWA <span class="arrow"><i class="ri ri-play-fill"></i></span>

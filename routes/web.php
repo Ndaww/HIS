@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AksesUserController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
@@ -360,6 +361,13 @@ Route::get('/master/rooms', [MasterRoomController::class, 'index'])->name('rooms
 Route::get('/master/rooms/data', [MasterRoomController::class, 'data'])->name('rooms.data');
 Route::resource('/master/rooms', MasterRoomController::class);
 Route::put('/master/rooms/{id}', [MasterRoomController::class, 'update'])->name('rooms.update');
+
+// master ruangan
+Route::get('/master/akses', [AksesUserController::class, 'index']);
+Route::get('/master/akses/get-menu/{userId}', [AksesUserController::class, 'getMenu']);
+Route::get('/master/akses/get-menu-dt/{userId}', [AksesUserController::class, 'getMenuDt']);
+Route::post('/master/akses/store/{userId}', [AksesUserController::class, 'store']);
+
 
 // master dept
 Route::get('/master/depts', [DepartmentController::class, 'index'])->name('master.depts.index');

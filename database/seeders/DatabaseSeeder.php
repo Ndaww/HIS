@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\AksesUser;
 use App\Models\Department;
 use App\Models\EquipmentPreventiveType;
 use App\Models\MasterEquipment;
 use App\Models\MasterEquipmentType;
+use App\Models\MasterMenu;
 use App\Models\MasterPatient;
 use App\Models\Masterpmtask;
 use App\Models\MasterPreventive;
@@ -337,6 +339,26 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('masterpmtasks')->insert($insertArray);
+
+
+        // master menu
+        $menus = ['Master', 'Ticketing', 'Preventive','Laporan','ZAWA'];
+        foreach ($menus as $menu) {
+            MasterMenu::create([
+                'name' => $menu,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // akses menu admin
+        $menus = MasterMenu::all();
+        foreach($menus as $menu){
+            AksesUser::create([
+                'user_id' => 1,
+                'menu_id' => $menu->id,
+            ]);
+        }
 
     }
 }

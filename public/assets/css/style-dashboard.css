@@ -1,7 +1,8 @@
 :root {
       --primary-color: #2ecc71;
       /* --background-color: #f9fefb; */
-      --background-color: #deefe4;
+      /* --background-color: #deefe4; */
+      --background-color: #EAF5EF;
       --text-color: #2f2f2f;
       --sidebar-bg: #ffffff;
       --navbar-bg: #ffffff;
@@ -25,7 +26,8 @@
 
     .navbar {
       /* background-color: #568169; */
-      background: linear-gradient(135deg, #a8ffdf, #34d399, #059669);
+      /* background: linear-gradient(135deg, #a8ffdf, #34d399, #059669); */
+      background: linear-gradient(135deg, #5dc19f, #19A850, #174032);
       padding: 1rem 2rem;
       display: flex;
       align-items: center;
@@ -122,6 +124,24 @@
       transition: transform 0.3s ease-in-out;
       border-right: 1px solid #eee;
       overflow-y: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #ccc transparent;
+
+    }
+
+    /* Untuk Chrome/Edge/Safari */
+    .sidebar::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.2);
+        border-radius: 8px;
     }
 
     .sidebar h2 {

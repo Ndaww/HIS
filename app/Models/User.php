@@ -74,9 +74,21 @@ class User extends Authenticatable
             Specializations::class, // nama model spesialisasi
             'technician_specialists',           // nama tabel pivot
             'user_id',                          // foreign key di pivot untuk user
-            'specialization_id'                 // foreign key di pivot untuk specialization
+        'specialization_id'                 // foreign key di pivot untuk specialization
         );
     }
+
+    public function aksesuser()
+    {
+        return $this->hasMany(AksesUser::class, 'user_id');
+    }
+    
+    // cek akses
+    public function hasMenu($menuId)
+    {
+        return $this->aksesuser()->where('menu_id', $menuId)->exists();
+    }
+
 
 
 }
