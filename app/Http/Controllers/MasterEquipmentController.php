@@ -25,9 +25,12 @@ class MasterEquipmentController extends Controller
     public function getTypeDatatable(Request $request)
     {
         if ($request->ajax()) {
-            $data = MasterEquipmentType::select(['id', 'name', 'created_at', 'updated_at']);
+            $data = MasterEquipmentType::select(['id', 'name', 'needs_specialist' , 'created_at', 'updated_at']);
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->editColumn('needs_specialist', function ($row) {
+                    return $row->needs_specialist == 1 ? 'Ya' : 'Tidak';
+                })
                 ->addColumn('action', function($row){
                     $btn = '<a href="javascript:void(0)" data-id="'.$row->id.'" data-toggle="tooltip" data-original-title="Edit" class="edit-type btn btn-primary btn-sm mx-1">Edit</a>';
                     $btn .= '<a href="javascript:void(0)" data-id="'.$row->id.'" data-original-title="Delete" class="delete-type btn btn-danger btn-sm mx-1">Hapus</a>';
@@ -58,7 +61,11 @@ class MasterEquipmentController extends Controller
     {
         MasterEquipmentType::updateOrCreate(
             ['id' => $request->type_id],
-            ['name' => $request->name]
+            [
+                'name' => $request->name,
+                'needs_specialist' => $request->has('needs_specialist') ? 1 : null
+            ]
+
         );
 
         return response()->json(['success' => 'Master Equipment Type saved successfully.']);

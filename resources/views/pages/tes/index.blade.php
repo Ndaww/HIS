@@ -9,6 +9,9 @@
     <div>
         {!! $qrCode !!}
     </div>
+    <div>
+        <a href="../">Back</a>
+    </div>
 
 </body>
 </html>

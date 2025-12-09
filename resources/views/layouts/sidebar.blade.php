@@ -37,7 +37,13 @@
         @if(auth()->user()->hasMenu(2))
         <li>
           <div class="parent {{request()->is('ticket/v2*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
-         <i class="ri-sm ri-ticket-line"></i> Ticketing V2 <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         <i class="ri-sm ri-ticket-line"></i> Ticketing V2  
+         @if(($assigned_ticket_count ?? 0) > 0)
+            <span class="badge bg-danger">
+                {{ $assigned_ticket_count }}
+            </span>
+         @endif
+         <span class="arrow"><i class="ri ri-play-fill"></i></span>
          </div>
 
           <ul class="child-menu" style="{{ request()->is('ticket/v2*') ? 'display: block;' : '' }}">

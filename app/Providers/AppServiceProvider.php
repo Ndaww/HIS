@@ -29,6 +29,13 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.sidebar', function ($view) {
         $equipmentSidebar = MasterEquipmentType::all();
         $view->with('equipmentSidebar', $equipmentSidebar);
+
+        // load count assigned ticket
+        if (auth()->check()) {
+            $ticketCount = auth()->user()->assignedTicketCount();
+            $view->with('assigned_ticket_count', $ticketCount);
+        }
+
     });
 
     }

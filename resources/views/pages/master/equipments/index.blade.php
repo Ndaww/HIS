@@ -17,6 +17,7 @@
                     <tr>
                         <th width="6%">No</th>
                         <th>Nama</th>
+                        <th>Butuh Spesialis?</th>
                         {{-- <th>Dibuat Pada</th>
                         <th>Diperbarui Pada</th> --}}
                         <th width="150px">Aksi</th>
@@ -68,6 +69,15 @@
                             <label for="name" class="col-sm-2 control-label">Nama</label>
                             <div class="col-sm-12">
                                 <input type="text" class="form-control" id="type_name" name="name" placeholder="Masukkan Nama" value="" maxlength="50" required="">
+                            </div>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="col-sm-2 control-label"></label>
+                            <div class="col-sm-12">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="needs_specialist" name="needs_specialist" value="1">
+                                    <label class="form-check-label" for="needs_specialist">Apakah perlu skill spesialis?</label>
+                                </div>
                             </div>
                         </div>
                         <div class="col-sm-offset-2 col-sm-10 mt-3">
@@ -152,6 +162,7 @@
             columns: [
                 {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
                 {data: 'name', name: 'name'},
+                {data: 'needs_specialist', name: 'needs_specialist'},
                 // {data: 'created_at', name: 'created_at'},
                 // {data: 'updated_at', name: 'updated_at'},
                 {data: 'action', name: 'action', orderable: false, searchable: false},
@@ -176,6 +187,12 @@
                 $('#ajax-type-modal').modal('show');
                 $('#type_id').val(data.id);
                 $('#type_name').val(data.name);
+                // ceckbox needs_specialist
+                if (data.needs_specialist == 1) {
+                    $('#needs_specialist').prop('checked', true);
+                } else {
+                    $('#needs_specialist').prop('checked', false);
+                }
             })
         });
 

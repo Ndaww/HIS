@@ -89,6 +89,24 @@ class User extends Authenticatable
         return $this->aksesuser()->where('menu_id', $menuId)->exists();
     }
 
+    public function assignedTickets()
+    {
+        return Ticket::where('department_id', $this->department_id)
+                        ->whereNotIn('status', ['solved', 'closed'])
+                        ->where(function ($q) {
+                            $q->where('assigned_employee_id', $this->id)
+                            ->orWhereNull('assigned_employee_id');
+                        });
+    }
+
+    public function assignedTicketCount()
+    {
+        return $this->assignedTickets()->count();
+    }
+
+
+
+
 
 
 }
