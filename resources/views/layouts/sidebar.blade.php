@@ -49,7 +49,11 @@
           <ul class="child-menu" style="{{ request()->is('ticket/v2*') ? 'display: block;' : '' }}">
             <li class="full-click {{ request()->is('ticket/v2/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/create">Buat Tiket</a></li>
             <li class="full-click {{ request()->is('ticket/v2') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2">Pengajuan Saya</a></li>
-            <li class="full-click {{ request()->is('ticket/v2/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/dept">Semua Tiket</a></li>
+            <li class="full-click {{ request()->is('ticket/v2/dept') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/ticket/v2/dept">Semua Tiket @if(($assigned_ticket_count ?? 0) > 0)
+            <span class="badge bg-danger">
+                {{ $assigned_ticket_count }}
+            </span>
+         @endif</a></li>
           </ul>
         </li>
         @endif
@@ -170,6 +174,34 @@
         @endif
 
         @if(auth()->user()->hasMenu(4))
+        <li>
+          <div class="parent {{request()->is('pln-meter*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-flashlight-fill"></i> PLN Meter
+         <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('pln-meter*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('pln-meter') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pln-meter">Index</a></li>
+            <li class="full-click {{ request()->is('pln-meter/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/pln-meter/create">Create</a></li>
+          </ul>
+        </li>
+        @endif
+
+        @if(auth()->user()->hasMenu(5))
+        <li>
+          <div class="parent {{request()->is('facility-tour*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
+         <i class="ri-sm ri-government-fill"></i> Facility Tour
+         <span class="arrow"><i class="ri ri-play-fill"></i></span>
+         </div>
+
+          <ul class="child-menu" style="{{ request()->is('facility-tour*') ? 'display: block;' : '' }}">
+            <li class="full-click {{ request()->is('facility-tour') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/facility-tour">Index</a></li>
+            <li class="full-click {{ request()->is('facility-tour/create') ? 'active' : '' }}"> <a class="text-decoration-none text-black" href="/facility-tour/create">Create</a></li>
+          </ul>
+        </li>
+        @endif
+
+        @if(auth()->user()->hasMenu(6))
         <li>
           <div class="parent {{request()->is('reports*') ? 'active open' : ''}}" onclick="toggleChildMenu(this)">
          <i class="ri-sm ri-folder-5-line"></i> Laporan <span class="arrow"><i class="ri ri-play-fill"></i></span>

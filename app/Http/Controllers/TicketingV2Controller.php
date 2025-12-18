@@ -198,7 +198,13 @@ class TicketingV2Controller extends Controller
             'open' => Ticket::where('status', 'open')->where('department_id', $deptId)->count(),
             'in_progress' => Ticket::where('status', 'in_progress')->where('assigned_employee_id', $userId)->count(),
             'pending' => Ticket::where('status', 'pending')->where('assigned_employee_id', $userId)->count(),
-            'solved' => Ticket::where('status', 'solved')->where('assigned_employee_id', $userId)->count(),
+            'solved' => Ticket::where('status', 'solved')
+            ->where(function ($q) {
+                $q->where('department_id', auth()->user()->dept->id)
+                ->whereDate('solve_date', '>=', Carbon::today()->subDays(3));
+            })
+            ->count(),
+            // 'closed' => Ticket::where('status', 'closed')->where('assigned_employee_id', $userId)->count(),
             'closed' => Ticket::where('status', 'closed')->where('assigned_employee_id', $userId)->count(),
         ];
 

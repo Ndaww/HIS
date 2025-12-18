@@ -14,4 +14,11 @@ class QRController extends Controller
 
         return view('pages.tes.index', compact('qrCode'));
     }
+
+    public function room($id)
+    {
+        $qrCode = QrCode::size(200)->generate('http://127.0.0.1:8000/facility-tour/create-by-room/'.$id);
+
+        return view('pages.tes.index', compact('qrCode'));
+    }
 }

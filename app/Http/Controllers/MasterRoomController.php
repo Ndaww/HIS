@@ -29,6 +29,7 @@ class MasterRoomController extends Controller
             ->addColumn('action', function ($row) {
                 return '
                     <button class="btn btn-sm btn-warning btn-edit" data-id="'.$row->id.'" data-json=\''.json_encode($row).'\'><i class="ri-edit-line"></i> Edit</button>
+                    <a href="/master/room/qr/'.$row->id.'" class="btn btn-success btn-sm mx-1">SHOW QR</a>
                 ';
             })
             ->rawColumns(['action'])

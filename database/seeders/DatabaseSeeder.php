@@ -342,7 +342,7 @@ class DatabaseSeeder extends Seeder
 
 
         // master menu
-        $menus = ['Master', 'Ticketing', 'Preventive','Laporan','ZAWA'];
+        $menus = ['Master', 'Ticketing', 'Preventive','PLN Meter','Facility Tour','Laporan','ZAWA'];
         foreach ($menus as $menu) {
             MasterMenu::create([
                 'name' => $menu,

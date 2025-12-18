@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AksesUserController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\FacilityTourController;
 use App\Http\Controllers\KonfirmasiPerawatController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MasterEquipmentController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\MasterPatientController;
 use App\Http\Controllers\MasterpmtaskController;
 use App\Http\Controllers\MasterRoomController;
 use App\Http\Controllers\PksController;
+use App\Http\Controllers\PlnMeterReadingController;
 use App\Http\Controllers\PmCheckRoundController;
 use App\Http\Controllers\PMFormHeaderController;
 use App\Http\Controllers\PmShiftScheduleController;
@@ -358,6 +360,7 @@ Route::get('/reports/pks/get', [ReportController::class, 'getAllPKS'])->name('li
 
 // master ruangan
 Route::get('/master/rooms', [MasterRoomController::class, 'index'])->name('rooms.index');
+Route::get('/master/room/qr/{id}',[QRController::class,'room']);
 Route::get('/master/rooms/data', [MasterRoomController::class, 'data'])->name('rooms.data');
 Route::resource('/master/rooms', MasterRoomController::class);
 Route::put('/master/rooms/{id}', [MasterRoomController::class, 'update'])->name('rooms.update');
@@ -579,4 +582,30 @@ Route::get('/zawa/qr/send', [ZawaController::class, 'sendTestNotification']);
 Route::get('/zawa/reconnect-session', [ZawaController::class, 'reconnectSession']);
 
 
+// history by alat
 Route::get('/qr',[QRController::class,'index']);
+
+// form tour qr by room
+Route::get('/qr/room',[QRController::class,'room']);
+
+
+// pln
+Route::prefix('pln-meter')->group(function () {
+    Route::get('/', [PlnMeterReadingController::class, 'index'])->name('pln-meter.index');
+    Route::get('/data', [PlnMeterReadingController::class, 'data'])->name('pln-meter.data');
+    Route::get('/create', [PlnMeterReadingController::class, 'create'])->name('pln-meter.create');
+    Route::post('/', [PlnMeterReadingController::class, 'store'])->name('pln-meter.store');
+    Route::get('/{id}', [PlnMeterReadingController::class, 'show'])->name('pln-meter.show');
+    Route::put('/{id}', [PlnMeterReadingController::class, 'update'])->name('pln-meter.update');
+    Route::delete('/{id}', [PlnMeterReadingController::class, 'destroy'])->name('pln-meter.destroy');
+});
+
+// facility
+Route::prefix('facility-tour')->group(function () {
+    Route::get('/', [FacilityTourController::class,'index'])->name('facility-tour.index');;
+    Route::get('/create', [FacilityTourController::class,'create'])->name('facility-tour.create');
+    Route::get('/create-by-room/{roomId}', [FacilityTourController::class,'createByRoom'])->name('facility-tour.createByRoom');
+    Route::post('/', [FacilityTourController::class,'store'])->name('facility-tour.store');
+    Route::get('/get-equipment/{roomId}', [FacilityTourController::class,'getEquipment']);
+});
+
