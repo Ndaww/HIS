@@ -105,7 +105,6 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        {{-- Tambahkan ID di sini --}}
                         <table class="table table-striped table-hover" id="targetsTable"> 
                             <thead>
                                 <tr>
@@ -117,32 +116,26 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($targets as $index => $target)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    {{-- Mengakses relasi equipmentType --}}
-                                    <td>{{ $target->equipmentType->name ?? 'Tipe Dihapus' }}</td>
-                                    {{-- Menggunakan array $nama_bulan yang sudah didefinisikan --}}
-                                    <td>{{ $nama_bulan[$target->month] ?? $target->month }} {{ $target->year }}</td>
-                                    <td><span class="badge bg-primary">{{ $target->target_count }}</span></td>
-                                    <td>
-                                        <a href="{{ route('preventive-target.edit', $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                        
-                                        {{-- FORM DELETE untuk SweetAlert --}}
-                                        <form action="{{ route('preventive-target.destroy', $target->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this);">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                {{-- Baris ini ditampilkan jika $targets kosong --}}
-                                <tr>
-                                    <td colspan="5" class="text-center">Belum ada target bulanan yang dibuat.</td>
-                                </tr>
-                            @endforelse
+                                @foreach($targets as $index => $target)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $target->equipmentType->name ?? 'Tipe Dihapus' }}</td>
+                                        <td>{{ $nama_bulan[$target->month] ?? $target->month }} {{ $target->year }}</td>
+                                        <td><span class="badge bg-primary">{{ $target->target_count }}</span></td>
+                                        <td>
+                                            <a href="{{ route('preventive-target.edit', $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
 
+                                            <form action="{{ route('preventive-target.destroy', $target->id) }}"
+                                                method="POST"
+                                                style="display:inline;"
+                                                onsubmit="return confirmDelete(this);">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -186,12 +179,20 @@
     $(document).ready(function() {
         
         // A. INISIALISASI DATATABLES
+        const hasData = $('#targetsTable tbody tr').length > 0;
+
+        console.log = hasData;
+
         $('#targetsTable').DataTable({
-            "order": [[ 2, "desc" ]], 
-            "columnDefs": [
-                { "orderable": false, "targets": [0, 4] }
-            ]
+            order: hasData ? [[2, "desc"]] : [],
+            columnDefs: [
+                { orderable: false, targets: [0, 4] }
+            ],
+            language: {
+                emptyTable: "Belum ada target yang dibuat"
+            }
         });
+
 
         // B. LOGIKA SWAL CONFIRM SUBMIT (Form Kiri)
         const submitButton = document.getElementById('submitTarget');

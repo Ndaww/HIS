@@ -636,6 +636,18 @@ class TicketController extends Controller
                 'updated_at' => now()
             ]);
 
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $filename = $file->store('attachments', 'public');
+
+                    TicketAttachment::create([
+                        'ticket_id' => $ticket->id,
+                        'type' => 'solved',
+                        'file_path' => $filename
+                    ]);
+                }
+            }
+
             $ticket->load(['requester', 'dept.head','assigned']);
 
             $phone = $ticket->assigned->phone;

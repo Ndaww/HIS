@@ -9,7 +9,7 @@
     {{-- Filter Bulan dan Tahun --}}
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('preventive-v2.dashboard') }}" class="row g-3 align-items-end">
+            <form method="GET" action="{{ route('pm_shift.dashboard') }}" class="row g-3 align-items-end">
                 <div class="col-md-3 col-sm-6">
                     <label for="month" class="form-label">Bulan</label>
                     <select name="month" id="month" class="form-select">
@@ -34,7 +34,7 @@
         <div class="col-md-12">
             <div class="card bg-primary">
                 <div class="card-header border-0">
-                    <h5 class="card-title">Pencapaian PM Global Bulan {{ $nama_bulan[$currentMonth] ?? '' }} {{ $currentYear }}</h5>
+                    <h5 class="card-title">Pencapaian PM Shift Bulan {{ $nama_bulan[$currentMonth] ?? '' }} {{ $currentYear }}</h5>
                 </div>
                 <div class="card-body">
                     <h1 class="display-4 fw-bold">{{ $globalSummary['overallPercentage'] }}%</h1>
@@ -86,7 +86,7 @@
                 <table class="table table-bordered table-hover" id="equipmentTable">
                     <thead>
                         <tr>
-                            <th>Master PM Task ID</th>
+                            <th>Master PM Task</th>
                             <th>Target Unit</th>
                             <th>Jadwal Dibuat</th>
                             <th>Realisasi (Completed)</th>

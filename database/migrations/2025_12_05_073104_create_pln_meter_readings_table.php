@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pln_meter_readings', function (Blueprint $table) {
             $table->id();
             $table->string('id_pelanggan_pln');
+            $table->date('tanggal_pencatatan')->nullable();
             $table->time('jam_pencatatan')->nullable();
             $table->decimal('cos_phi', 5, 3)->nullable();
             $table->decimal('wbp', 12, 2)->nullable();

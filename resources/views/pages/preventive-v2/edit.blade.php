@@ -7,7 +7,6 @@
     </div>
 
     @php
-        // Definisi array nama bulan (agar bisa diakses oleh Blade di luar script JS)
         $nama_bulan = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -75,6 +74,98 @@
             </form>
         </div>
     </div>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5 class="mb-0">
+                Edit Jadwal:
+                {{ $target->equipmentType->name ?? 'Tipe Dihapus' }}
+                ({{ $nama_bulan[$target->month] }}/{{ $target->year }})
+            </h5>
+        </div>
+        <div class="card-body mt-3">
+
+    <form action="{{ route('preventive-schedule.bulk-update') }}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr class="text-center">
+                        <th width="5px">No</th>
+                        <th>Equipment</th>
+                        <th>Serial Number</th>
+                        <th>Lantai- Ruangan</th>
+                        <th>Teknisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($schedules as $index => $schedule)
+                        <tr>
+                            <td class="text-center">{{ $loop->iteration }}</td>
+                            <td>
+                                {{ $schedule->equipment->name ?? '-' }}
+                                <input type="hidden" name="schedules[{{ $schedule->id }}][equipment_id]" value="{{ $schedule->equipment_id }}">
+                            </td>
+
+                            <td>
+                                {{ $schedule->equipment->serial_number ?? '-' }}
+                            </td>
+
+                            <td>
+                                {{ $schedule->equipment->room->floor ?? '-'}} - {{ $schedule->equipment->room->name ?? '-'}}
+                                {{-- <input type="text" class="form-control" name="schedules[{{ $schedule->id }}][equipment]" value="{{ $schedule->equipment->room->name }}" readonly> --}}
+                            </td>
+
+                            <td>
+                                <select name="schedules[{{ $schedule->id }}][technician_id]" class="form-select">
+                                    <option value="">--</option>
+                                    @foreach($technicians as $tech)
+                                        <option value="{{ $tech->id }}"
+                                            {{ $schedule->technician_id == $tech->id ? 'selected' : '' }}>
+                                            {{ $tech->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </td>
+
+                            {{-- <td>
+                                <input type="date"
+                                       class="form-control"
+                                       name="schedules[{{ $schedule->id }}][realization_date]"
+                                       value="{{ $schedule->realization_date }}">
+                            </td> --}}
+
+                            {{-- <td>
+                                <select name="schedules[{{ $schedule->id }}][status]"
+                                        class="form-select">
+                                    <option value="Scheduled" {{ $schedule->status == 'Scheduled' ? 'selected' : '' }}>Scheduled</option>
+                                    <option value="On Progress" {{ $schedule->status == 'On Progress' ? 'selected' : '' }}>On Progress</option>
+                                    <option value="Done" {{ $schedule->status == 'Done' ? 'selected' : '' }}>Done</option>
+                                </select>
+                            </td> --}}
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                Tidak ada schedule
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3">
+            <button class="btn btn-success">
+                Simpan Perubahan Schedule
+            </button>
+        </div>
+    </form>
+</div>
+
+
 @endsection
 
 @section('js')
@@ -115,7 +206,6 @@
             });
         }
         
-        // --- Logika Swal Notifikasi Sukses/Error (POST-REDIRECT) ---
         const swalSuccessMessage = "{{ Session::get('swal_success') }}";
         const swalErrorMessage = "{{ Session::get('swal_error') }}";
 

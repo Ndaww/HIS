@@ -15,49 +15,46 @@
             <form id="pln-form" action="{{ route('pln-meter.store') }}" method="POST">
                 @csrf
 
-                {{-- ID PELANGGAN --}}
                 <div class="mb-3">
                     <label class="form-label">ID Pelanggan PLN</label>
                     <input type="text" name="id_pelanggan_pln" class="form-control" required>
                 </div>
 
-                {{-- JAM PENCATATAN --}}
+                <div class="mb-3">
+                    <label class="form-label">Tanggal Pencatatan</label>
+                    <input type="date" name="tanggal_pencatatan" class="form-control" required>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Jam Pencatatan</label>
                     <input type="time" name="jam_pencatatan" class="form-control" required>
                 </div>
 
-                {{-- COS PHI --}}
                 <div class="mb-3">
                     <label class="form-label">Cos Phi</label>
                     <input type="number" step="0.001" name="cos_phi" class="form-control" placeholder="Contoh: 0.98" required>
                 </div>
 
-                {{-- WBP --}}
                 <div class="mb-3">
                     <label class="form-label">WBP</label>
                     <input type="number" step="0.01" name="wbp" class="form-control" required>
                 </div>
 
-                {{-- LWBP --}}
                 <div class="mb-3">
                     <label class="form-label">LWBP</label>
                     <input type="number" step="0.01" name="lwbp" class="form-control" required>
                 </div>
 
-                {{-- kWh --}}
                 <div class="mb-3">
                     <label class="form-label">kWh</label>
                     <input type="number" step="0.01" name="kwh" class="form-control" required>
                 </div>
 
-                {{-- kVARh --}}
                 <div class="mb-3">
                     <label class="form-label">kVARh</label>
                     <input type="number" step="0.01" name="kvarh" class="form-control" required>
                 </div>
 
-                {{-- TEMUAN --}}
                 <div class="mb-3">
                     <label class="form-label">Temuan (Opsional)</label>
                     <textarea name="temuan" class="form-control" rows="3" placeholder="Isi jika ada temuan"></textarea>

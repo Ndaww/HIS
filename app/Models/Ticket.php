@@ -34,7 +34,7 @@ class Ticket extends Model
 
     public function attachmentsClose()
     {
-        return $this->hasMany(TicketAttachment::class)->where('type', 'close');
+        return $this->hasMany(TicketAttachment::class)->where('type', 'solved');
     }
 
     public function generateMessage(): string

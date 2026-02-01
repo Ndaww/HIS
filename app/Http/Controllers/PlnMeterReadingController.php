@@ -21,7 +21,7 @@ class PlnMeterReadingController extends Controller
 
     public function data()
     {
-        $query = PlnMeterReading::orderBy('created_at', 'desc');
+        $query = PlnMeterReading::orderBy('tanggal_pencatatan', 'desc');
 
         return DataTables::of($query)
             ->addIndexColumn()
@@ -52,6 +52,7 @@ class PlnMeterReadingController extends Controller
     {
         $request->validate([
             'id_pelanggan_pln' => 'required|string|max:50',
+            'tanggal_pencatatan'   => 'required',
             'jam_pencatatan'   => 'required',
             'cos_phi'          => 'required|numeric',
             'wbp'              => 'required|numeric',
@@ -63,6 +64,7 @@ class PlnMeterReadingController extends Controller
 
         plnMeterReading::create([
             'id_pelanggan_pln' => $request->id_pelanggan_pln,
+            'tanggal_pencatatan'   => $request->tanggal_pencatatan,
             'jam_pencatatan'   => $request->jam_pencatatan,
             'cos_phi'          => $request->cos_phi,
             'wbp'              => $request->wbp,
@@ -82,10 +84,10 @@ class PlnMeterReadingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(plnMeterReading $plnMeterReading)
+    public function show(plnMeterReading $id)
     {
-        $data = PlnMeterReading::findOrFail($plnMeterReading);
-        return response()->json($data);
+        // $data = PlnMeterReading::findOrFail($plnMeterReading);
+        return response()->json($id);
     }
 
     /**
@@ -99,10 +101,11 @@ class PlnMeterReadingController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateplnMeterReadingRequest $request, plnMeterReading $plnMeterReading)
+    public function update(UpdateplnMeterReadingRequest $request, plnMeterReading $id)
     {
-        $data = PlnMeterReading::findOrFail($plnMeterReading);
-        $data->update($request->all());
+        // $data = PlnMeterReading::findOrFail($plnMeterReading);
+        $id->update($request->validated());
+        // dd($request->validated());
 
         return response()->json(['message' => 'Data berhasil diperbarui']);
     }

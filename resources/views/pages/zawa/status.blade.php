@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','PKS - Verifikasi PKS')
+@section('title','Zawa - Cek Status Session')
 @section('main-content')
     <div class="header-breadcrumb">
         <h2 id="page-title"></h2>

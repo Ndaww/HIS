@@ -50,10 +50,7 @@ class PreventiveV2Controller extends Controller
         // Data untuk filter Bulan/Tahun
         $nama_bulan = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
 
-
-        // =======================================================
         // 2. DATA TARGET VS REALISASI (PER TIPE EQUIPMENT & GLOBAL)
-        // =======================================================
         $targets = PreventiveTargetsV2::with('equipmentType')
                     ->where('month', $currentMonth)
                     ->where('year', $currentYear)
@@ -109,9 +106,7 @@ class PreventiveV2Controller extends Controller
         ];
         
         
-        // =======================================================
         // 3. DATA BEBAN KERJA SPESIALIS
-        // =======================================================
         
         // Ambil semua Spesialis Aktif (is_specialist = 1)
         $specialists = User::where('is_specialist', 1)
@@ -179,10 +174,8 @@ class PreventiveV2Controller extends Controller
          // Data sudah divalidasi oleh StorePreventiveTargetRequest (termasuk unique constraint)
         $data = $request->validated();
         
-        // Pastikan created_by diisi jika ada autentikasi
         $data['created_by'] = auth()->id();
         
-        // Mulai transaksi database untuk memastikan kedua proses berhasil atau gagal bersamaan
         DB::beginTransaction();
 
         try {
@@ -223,13 +216,12 @@ class PreventiveV2Controller extends Controller
                            ->get();
         
         // B. Batasi jumlah unit yang akan dijadwalkan sesuai target_count
-        // Jika target_count lebih kecil dari jumlah unit, ambil N unit pertama (Atau bisa pakai logika Round Robin/Prioritas lain)
+        // Jika target_count lebih kecil dari jumlah unit, ambil N unit pertama
         $unitsToSchedule = $units->take($target->target_count); 
 
         $schedules = [];
         foreach ($unitsToSchedule as $unit) {
             // C. Buat array data untuk jadwal baru
-            // Dapatkan ID Spesialisasi Otomatis
             $technicianId = $this->getSpecialistId($unit->equipment_type_id); // Ambil dari unit->equipment_type_id
 
             $schedules[] = [
@@ -257,14 +249,14 @@ class PreventiveV2Controller extends Controller
 
     public function edit(PreventiveTargetsV2 $target)
     {
-        // 1. Ambil semua tipe equipment untuk dropdown
         $equipments = MasterEquipmentType::all();
+
+        $schedules = PreventiveSchedulesV2::where('target_id',$target->id)->get();
+
+        $technicians = User::all();
+        // dd($schedules);
         
-        // 2. Kirim data target yang spesifik untuk diedit
-        // Kita TIDAK perlu mengirim $targets (daftar semua target) di sini
-        
-        // Mengubah view yang di-return dari 'create' menjadi 'edit'
-        return view('pages.preventive-v2.edit', compact('equipments', 'target')); 
+        return view('pages.preventive-v2.edit', compact('equipments', 'target','schedules','technicians')); 
     }
 
 
@@ -433,5 +425,219 @@ class PreventiveV2Controller extends Controller
         }
     }
 
+    public function bulkUpdate(Request $request)
+    {
+        try {
+            $request->validate([
+                'schedules' => 'required|array',
+            ]);
+
+            foreach ($request->schedules as $id => $data) {
+
+                PreventiveSchedulesV2::where('id', $id)->update([
+                    'technician_id'    => $data['technician_id'] ?? null,
+                ]);
+            }
+
+            return redirect()->back()->with(
+                'swal_success',
+                'Preventive schedule berhasil diperbarui.'
+            );
+
+        } catch (\Throwable $e) {
+
+            return redirect()->back()->with(
+                'swal_error',
+                'Terjadi kesalahan saat memperbarui preventive schedule.<br>Silakan coba kembali.'
+            );
+        }
+    }
+
+
+
+    // ambil dari sini untuk dashboard baru
+    public function globalSummary(Request $request)
+    {
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('Y'));
+
+        $targets = PreventiveTargetsV2::where('month', $month)->where('year', $year)->get();
+        $totalTarget = $targets->sum('target_count');
+
+        $targetIds = $targets->pluck('id');
+        $schedulesSummary = PreventiveSchedulesV2::select(
+                                'target_id',
+                                DB::raw('COUNT(id) as total_scheduled'),
+                                DB::raw('SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as total_completed')
+                            )
+                            ->whereIn('target_id', $targetIds)
+                            ->groupBy('target_id')
+                            ->get();
+
+        $totalScheduledGlobal = $schedulesSummary->sum('total_scheduled');
+        $totalCompletedGlobal = $schedulesSummary->sum('total_completed');
+
+        $overallPercentage = ($totalScheduledGlobal > 0) ? round(($totalCompletedGlobal / $totalScheduledGlobal) * 100, 1) : 0;
+
+        return response()->json([
+            'totalTarget' => $totalTarget,
+            'totalScheduled' => $totalScheduledGlobal,
+            'totalCompleted' => $totalCompletedGlobal,
+            'overallPercentage' => $overallPercentage
+        ]);
+    }
+
+    public function chartEquipment(Request $request)
+    {
+        $month = $request->month;
+        $year = $request->year;
+
+        $targets = PreventiveTargetsV2::with('equipmentType')
+            ->where('month', $month)
+            ->where('year', $year)
+            ->get();
+
+        $targetIds = $targets->pluck('id');
+
+        $schedulesSummary = PreventiveSchedulesV2::select(
+            'target_id',
+            DB::raw('COUNT(id) as total_scheduled'),
+            DB::raw('SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed_count')
+        )
+        ->whereIn('target_id', $targetIds)
+        ->groupBy('target_id')
+        ->get()
+        ->keyBy('target_id');
+
+        $dashboardData = $targets->map(function ($target) use ($schedulesSummary) {
+            $summary = $schedulesSummary->get($target->id);
+
+            $totalScheduled = $summary->total_scheduled ?? 0;
+            $totalCompleted = $summary->completed_count ?? 0;
+
+            return [
+                'equipment_type' => $target->equipmentType->name,
+                'target_count' => $target->target_count,
+                'total_scheduled' => $totalScheduled,
+                'completed_count' => $totalCompleted,
+                'percentage' => ($totalScheduled > 0) ? round(($totalCompleted / $totalScheduled) * 100, 1) : 0,
+            ];
+        });
+
+        return response()->json($dashboardData);
+    }
+
+    public function chartSpecialist(Request $request)
+    {
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('Y'));
+
+        $specialists = User::where('is_specialist', 1)->get(['id','name']);
+
+        $schedulesByTechnician = PreventiveSchedulesV2::select(
+                                'technician_id',
+                                DB::raw('COUNT(id) as total_assigned'),
+                                DB::raw('SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as total_completed')
+                            )
+                            ->where('target_month', $month)
+                            ->where('target_year', $year)
+                            ->whereNotNull('technician_id')
+                            ->groupBy('technician_id')
+                            ->get()
+                            ->keyBy('technician_id');
+        // dd($schedulesByTechnician);
+
+        $data = $specialists->map(function ($specialist) use ($schedulesByTechnician) {
+            $summary = $schedulesByTechnician->get($specialist->id);
+            $totalAssigned = $summary->total_assigned ?? 0;
+            $totalCompleted = $summary->total_completed ?? 0;
+            $percentage = ($totalAssigned > 0) ? round(($totalCompleted / $totalAssigned) * 100, 1) : 0;
+
+            return [
+                'specialist_name' => $specialist->name,
+                'percentage' => $percentage,
+                'total_assigned' => $totalAssigned,
+                'total_completed' => $totalCompleted
+            ];
+        });
+
+        return response()->json($data->sortByDesc('total_assigned')->values());
+    }
+
+    public function tableEquipment(Request $request)
+    {
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('Y'));
+
+        $targets = PreventiveTargetsV2::with('equipmentType')
+                        ->where('month', $month)
+                        ->where('year', $year)
+                        ->get();
+
+        $targetIds = $targets->pluck('id');
+
+        $schedulesSummary = PreventiveSchedulesV2::select(
+                                'target_id',
+                                DB::raw('COUNT(id) as total_scheduled'),
+                                DB::raw('SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as total_completed')
+                            )
+                            ->whereIn('target_id', $targetIds)
+                            ->groupBy('target_id')
+                            ->get()
+                            ->keyBy('target_id');
+
+        $data = $targets->map(function ($target) use ($schedulesSummary) {
+            $summary = $schedulesSummary->get($target->id);
+            $totalScheduled = $summary->total_scheduled ?? 0;
+            $totalCompleted = $summary->total_completed ?? 0;
+            $percentage = ($totalScheduled > 0) ? round(($totalCompleted / $totalScheduled) * 100, 1) : 0;
+
+            return [
+                'equipment_type' => $target->equipmentType->name,
+                'target_count' => $target->target_count,
+                'total_scheduled' => $totalScheduled,
+                'completed_count' => $totalCompleted,
+                'percentage' => $percentage
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+    public function tableSpecialist(Request $request)
+    {
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('Y'));
+
+        $specialists = User::where('is_specialist', 1)->get(['id','name']);
+
+        $schedulesByTechnician = PreventiveSchedulesV2::select(
+                                'technician_id',
+                                DB::raw('COUNT(id) as total_assigned'),
+                                DB::raw('SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as total_completed')
+                            )
+                            ->where('target_month', $month)
+                            ->where('target_year', $year)
+                            ->whereNotNull('technician_id')
+                            ->groupBy('technician_id')
+                            ->get()
+                            ->keyBy('technician_id');
+
+        $data = $specialists->map(function ($specialist) use ($schedulesByTechnician) {
+            $summary = $schedulesByTechnician->get($specialist->id);
+            $totalAssigned = $summary->total_assigned ?? 0;
+            $totalCompleted = $summary->total_completed ?? 0;
+            $percentage = ($totalAssigned > 0) ? round(($totalCompleted / $totalAssigned) * 100, 1) : 0;
+
+            return [
+                'specialist_name' => $specialist->name,
+                'total_assigned' => $totalAssigned,
+                'total_completed' => $totalCompleted,
+                'percentage' => $percentage
+            ];
+        });
+
+        return response()->json($data->sortByDesc('total_assigned')->values());
+    }
 
 }

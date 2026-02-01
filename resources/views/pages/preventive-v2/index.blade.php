@@ -94,7 +94,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($dashboardData as $data)
+                        @foreach($dashboardData as $data)
                             <tr>
                                 <td>{{ $data->equipment_type }}</td>
                                 <td>{{ number_format($data->target_count) }}</td>
@@ -106,11 +106,11 @@
                                     </span>
                                 </td>
                             </tr>
-                        @empty
+                        {{-- @empty
                             <tr>
                                 <td colspan="5" class="text-center">Tidak ada Target yang ditemukan untuk periode ini.</td>
-                            </tr>
-                        @endforelse
+                            </tr> --}}
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -134,7 +134,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($specialistRealization as $data)
+                        @foreach($specialistRealization as $data)
                             <tr>
                                 <td>{{ $data->specialist_name }}</td>
                                 <td>{{ number_format($data->total_assigned) }}</td>
@@ -145,11 +145,11 @@
                                     </span>
                                 </td>
                             </tr>
-                        @empty
+                        {{-- @empty
                             <tr>
                                 <td colspan="4" class="text-center">Tidak ada spesialis aktif atau jadwal yang ditugaskan di periode ini.</td>
-                            </tr>
-                        @endforelse
+                            </tr> --}}
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -167,9 +167,9 @@
     $(document).ready(function() {
         // INISIALISASI DATATABLES
         $('#equipmentTable').DataTable({
-            "paging": false,
-            "searching": false,
-            "info": false,
+            "paging": true,
+            "searching": true,
+            "info": true,
             "order": [[ 4, "desc" ]] // Urut berdasarkan Persentase
         });
 

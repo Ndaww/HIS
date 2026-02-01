@@ -11,7 +11,7 @@ class ZawaController extends Controller
     public function createSession()
     {
         // Panggil API untuk mendapatkan detail otorisasi.
-        $response = Http::post('https://api-zawa.azickri.com/authorize');
+        $response = Http::post('https://api-zawa.azickri.com/session');
 
         if ($response->failed()) {
             return view('zawa.error', ['message' => 'Gagal menginisiasi otorisasi Zawa. Silakan coba lagi.']);
@@ -26,7 +26,7 @@ class ZawaController extends Controller
                     'id' => env('ZAWA_ID'),
                     'session-id' => env('ZAWA_SESSION_ID'),
                     'Accept' => '*/*',
-                ])->delete('https://api-zawa.azickri.com/authorize');
+                ])->delete('https://api-zawa.azickri.com/session');
 
         sleep(5);
 
@@ -35,7 +35,7 @@ class ZawaController extends Controller
             'id' => $id,
             'session-id' => $sessionId,
             'Accept' => '*/*',
-        ])->get('https://api-zawa.azickri.com/qrcode');
+        ])->get('https://api-zawa.azickri.com/session');
 
         if ($qrResponse->failed()) {
             return view('zawa.error', ['message' => 'Gagal mendapatkan QR Code. Silakan muat ulang halaman.']);
@@ -73,6 +73,7 @@ class ZawaController extends Controller
             'session-id' => $sessionId,
             'Accept' => '*/*',
             'Content-Type' => 'application/json',
+            'Content-Length' => '68'
         ])->post('https://api-zawa.azickri.com/message', [
             'phone' => '6287889643945',
             'type' => 'text',
@@ -87,13 +88,13 @@ class ZawaController extends Controller
                     'id' => $id,
                     'session-id' => $sessionId,
                     'Accept' => '*/*',
-                ])->put('https://api-zawa.azickri.com/authorize');
+                ])->put('https://api-zawa.azickri.com/session');
 
                 $qrResponse = Http::withHeaders([
                     'id' => $id,
                     'session-id' => $sessionId,
                     'Accept' => '*/*',
-                ])->get('https://api-zawa.azickri.com/qrcode');
+                ])->get('https://api-zawa.azickri.com/session');
 
                 $qr = $qrResponse->json();
                 $qrCodeImage = $qr['qrcode'] ?? null;
@@ -181,7 +182,7 @@ class ZawaController extends Controller
             'id' => $id,
             'session-id' => $sessionId,
             'Accept' => '*/*',
-        ])->put('https://api-zawa.azickri.com/authorize');
+        ])->put('https://api-zawa.azickri.com/session');
 
         $data = $response->json('_id');
         // dd($data<>null);

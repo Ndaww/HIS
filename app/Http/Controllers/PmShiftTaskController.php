@@ -345,27 +345,28 @@ class PmShiftTaskController extends Controller
         // 1. Ambil Bulan dan Tahun dari request atau default
         $currentMonth = $request->input('month', Carbon::now()->month);
         $currentYear = $request->input('year', Carbon::now()->year);
+        $currentMonthFormatted = str_pad($currentMonth, 2, '0', STR_PAD_LEFT);
+        // dd($currentMonth,$currentYear);
 
         $nama_bulan = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
             7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        // =================================================================
-        // 2. Query Dasar yang sudah DIFILTER dengan ALIAS
-        // =================================================================
         
-        // Base Query untuk Jadwal PM (pm_shift_schedules)
-        $scheduledQuery = DB::table('pm_shift_schedules', 's') // Tambahkan alias 's' di sini
-                            // PERBAIKAN: Gunakan alias untuk kolom yang ambigu
-                            ->where('s.month', $currentMonth)
+        // 2. Query Dasar 
+        $scheduledQuery = DB::table('pm_shift_schedules', 's') 
+                            ->where('s.month', $currentMonthFormatted)
                             ->where('s.year', $currentYear);
+
+        // dd($scheduledQuery->get());
                             
         $totalScheduled = $scheduledQuery->count();
+        // dd($totalScheduled);
 
         // Total Tugas Selesai (pm_shift_tasks)
         $totalCompleted = DB::table('pm_shift_tasks')
-                            ->where('month', $currentMonth) // Di sini tidak ambigu karena hanya satu tabel
+                            ->where('month', $currentMonthFormatted) // Di sini tidak ambigu karena hanya satu tabel
                             ->where('year', $currentYear)
                             ->where('status', 'Done')
                             ->count();
@@ -435,19 +436,19 @@ class PmShiftTaskController extends Controller
         
         // Ambil semua tugas yang *sudah* selesai di periode ini
         $tasksCompletedByUser = DB::table('pm_shift_tasks')
-                                    ->where('month', $currentMonth)
+                                    ->where('month', $currentMonthFormatted)
                                     ->where('year', $currentYear)
                                     ->where('status', 'Done')
                                     ->whereNotNull('performed_by_user_id')
                                     ->get();
 
-        $userPerformance = $tasksCompletedByUser->groupBy('performed_by_user_id')->map(function ($tasks, $userId) use ($currentMonth, $currentYear) {
+        $userPerformance = $tasksCompletedByUser->groupBy('performed_by_user_id')->map(function ($tasks, $userId) use ($currentMonthFormatted, $currentYear) {
             $totalCompleted = $tasks->count();
             $assignedShift = $tasks->first()->assigned_shift ?? 'N/A';
             
             // Query untuk mendapatkan total beban kerja shift user
             $totalAssignedToShift = DB::table('pm_shift_schedules')
-                ->where('month', $currentMonth)
+                ->where('month', $currentMonthFormatted)
                 ->where('year', $currentYear)
                 ->where('shift_name', $assignedShift)
                 ->count();
@@ -473,6 +474,169 @@ class PmShiftTaskController extends Controller
             'userPerformance'
         ));
     }
+
+    public function getGlobalSummary(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        $totalScheduled = DB::table('pm_shift_schedules')
+                            ->where('month', $monthFormatted)
+                            ->where('year', $year)
+                            ->count();
+
+        $totalCompleted = DB::table('pm_shift_tasks')
+                            ->where('month', $monthFormatted)
+                            ->where('year', $year)
+                            ->where('status', 'Done')
+                            ->count();
+
+        $overallPercentage = ($totalScheduled > 0) ? round(($totalCompleted / $totalScheduled) * 100) : 0;
+
+        return response()->json([
+            'totalScheduled' => $totalScheduled,
+            'totalCompleted' => $totalCompleted,
+            'overallPercentage' => $overallPercentage
+        ]);
+    }
+
+    public function getChartData(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        $scheduledQuery = DB::table('pm_shift_schedules as s')
+                            ->where('s.month', $monthFormatted)
+                            ->where('s.year', $year)
+                            ->leftJoin('pm_shift_tasks as t', 's.master_pm_task_id', '=', 't.master_pm_task_id')
+                            ->leftJoin('masterpmtasks as m', 's.master_pm_task_id', '=', 'm.id')
+                            ->select('s.master_pm_task_id', 's.shift_name', 'm.task_name', 't.status');
+
+        $combinedData = $scheduledQuery->get();
+
+        // Data chart Equipment
+        $equipmentData = $combinedData->groupBy('master_pm_task_id')->map(function ($tasks, $taskId) {
+            $totalScheduled = $tasks->count();
+            $completedCount = $tasks->filter(fn($t) => $t->status === 'Done')->count();
+            $percentage = ($totalScheduled > 0) ? round(($completedCount / $totalScheduled) * 100) : 0;
+            return [
+                'task_name' => $tasks->first()->task_name,
+                'percentage' => $percentage
+            ];
+        })->values();
+
+        // Data chart Specialist
+        $specialistData = $combinedData->groupBy('shift_name')->map(function ($tasks, $shiftName) {
+            $totalAssigned = $tasks->count();
+            $totalCompleted = $tasks->filter(fn($t) => $t->status === 'Done')->count();
+            $percentage = ($totalAssigned > 0) ? round(($totalCompleted / $totalAssigned) * 100) : 0;
+            return [
+                'shift_name' => $shiftName,
+                'percentage' => $percentage
+            ];
+        })->values();
+
+        return response()->json([
+            'equipmentData' => $equipmentData,
+            'specialistData' => $specialistData
+        ]);
+    }
+
+    public function getEquipmentTable(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        $combinedData = DB::table('pm_shift_schedules as s')
+                            ->where('s.month', $monthFormatted)
+                            ->where('s.year', $year)
+                            ->leftJoin('pm_shift_tasks as t', 's.master_pm_task_id', '=', 't.master_pm_task_id')
+                            ->leftJoin('masterpmtasks as m', 's.master_pm_task_id', '=', 'm.id')
+                            ->select('s.master_pm_task_id', 's.shift_name', 'm.task_name', 't.status')
+                            ->get();
+
+        $equipmentData = $combinedData->groupBy('master_pm_task_id')->map(function ($tasks, $taskId) {
+            $totalScheduled = $tasks->count();
+            $completedCount = $tasks->filter(fn($t) => $t->status === 'Done')->count();
+            $percentage = ($totalScheduled > 0) ? round(($completedCount / $totalScheduled) * 100) : 0;
+            return [
+                'task_name' => $tasks->first()->task_name,
+                'total_scheduled' => $totalScheduled,
+                'completed_count' => $completedCount,
+                'percentage' => $percentage
+            ];
+        })->values();
+
+        return response()->json($equipmentData);
+    }
+
+    public function getSpecialistTable(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        $combinedData = DB::table('pm_shift_schedules as s')
+                            ->where('s.month', $monthFormatted)
+                            ->where('s.year', $year)
+                            ->leftJoin('pm_shift_tasks as t', 's.master_pm_task_id', '=', 't.master_pm_task_id')
+                            ->select('s.shift_name', 't.status')
+                            ->get();
+
+        $specialistData = $combinedData->groupBy('shift_name')->map(function ($tasks, $shiftName) {
+            $totalAssigned = $tasks->count();
+            $totalCompleted = $tasks->filter(fn($t) => $t->status === 'Done')->count();
+            $percentage = ($totalAssigned > 0) ? round(($totalCompleted / $totalAssigned) * 100) : 0;
+            return [
+                'shift_name' => $shiftName,
+                'total_assigned' => $totalAssigned,
+                'total_completed' => $totalCompleted,
+                'percentage' => $percentage
+            ];
+        })->values();
+
+        return response()->json($specialistData);
+    }
+
+    public function getUserPerformance(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        $tasksCompletedByUser = DB::table('pm_shift_tasks')
+                                    ->where('month', $monthFormatted)
+                                    ->where('year', $year)
+                                    ->where('status', 'Done')
+                                    ->whereNotNull('performed_by_user_id')
+                                    ->get();
+
+        $userPerformance = $tasksCompletedByUser->groupBy('performed_by_user_id')->map(function ($tasks, $userId) use ($monthFormatted, $year) {
+            $totalCompleted = $tasks->count();
+            $assignedShift = $tasks->first()->assigned_shift ?? 'N/A';
+
+            $totalAssignedToShift = DB::table('pm_shift_schedules')
+                ->where('month', $monthFormatted)
+                ->where('year', $year)
+                ->where('shift_name', $assignedShift)
+                ->count();
+
+            return [
+                'user_id' => $userId,
+                'user_name' => 'User ID: '.$userId,
+                'assigned_shift' => $assignedShift,
+                'total_assigned_to_shift' => $totalAssignedToShift,
+                'total_completed' => $totalCompleted,
+                'percentage' => ($totalAssignedToShift > 0) ? round(($totalCompleted / $totalAssignedToShift) * 100) : 0
+            ];
+        })->values();
+
+        return response()->json($userPerformance);
+    }
+
 
 
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AksesUserController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FacilityTourController;
 use App\Http\Controllers\KonfirmasiPerawatController;
@@ -99,7 +100,7 @@ Route::get('/', function () {
 //     return 'Terkirim!';
 // });
 
-Route::get('/dashboard', function(){
+Route::get('/dashboard', function(Request $request){
     $tickets = Ticket::all();
 
     // --- Ringkasan (Info Cards) ---
@@ -153,13 +154,18 @@ Route::get('/dashboard', function(){
     }
     $monthsForSelect = array_reverse($monthsForSelect);
 
-
+    // PREVENTIVE SPECIALIST 
+    $currentMonth = $request->input('month', date('n'));
+    $currentYear = $request->input('year', date('Y'));
+    $nama_bulan = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+    
     return view('dashboard', compact(
         'total', 'open', 'priority', 'closedToday',
         'dailyStatus',
         'monthlyDates', 'monthlyCounts',
         'latestTickets',
-        'monthsForSelect'
+        'monthsForSelect',
+        'currentMonth', 'currentYear', 'nama_bulan'
     ));
 })->middleware('auth')->name('dashboard');
 
@@ -209,6 +215,29 @@ Route::get('/dashboard/monthly-tickets', function (Request $request) {
         return response()->json(['error' => 'An unexpected error occurred. Please check the server logs.'], 500);
     }
 })->middleware('auth')->name('dashboard.monthly-tickets');
+
+
+Route::get('/dashboard/kwh/summary', [DashboardController::class, 'summary'])->name('dashboard.kwh.summary');
+Route::get('/dashboard/kwh/chart', [DashboardController::class, 'chart'])->name('dashboard.kwh.chart');
+// dashboard preventigve specialist
+Route::prefix('dashboard/preventive-v2')->group(function () {
+    Route::get('/data/global-summary', [PreventiveV2Controller::class, 'globalSummary'])->name('preventive-v2.data.global-summary');
+    Route::get('/data/chart/equipment', [PreventiveV2Controller::class, 'chartEquipment'])->name('preventive-v2.data.chart-equipment');
+    Route::get('/data/chart/specialist', [PreventiveV2Controller::class, 'chartSpecialist'])->name('preventive-v2.data.chart-specialist');
+    Route::get('/data/table/equipment', [PreventiveV2Controller::class, 'tableEquipment'])->name('preventive-v2.data.table-equipment');
+    Route::get('/data/table/specialist', [PreventiveV2Controller::class, 'tableSpecialist'])->name('preventive-v2.data.table-specialist');
+});
+
+// dashboard preventive shift
+Route::get('/pm_shift/global-summary', [PmShiftTaskController::class, 'getGlobalSummary'])->name('pm_shift.globalSummary');
+Route::get('/pm_shift/charts', [PmShiftTaskController::class, 'getChartData'])->name('pm_shift.chartData');
+Route::get('/pm_shift/table/equipment', [PmShiftTaskController::class, 'getEquipmentTable'])->name('pm_shift.table.equipment');
+Route::get('/pm_shift/table/specialist', [PmShiftTaskController::class, 'getSpecialistTable'])->name('pm_shift.table.specialist');
+Route::get('/pm_shift/table/user', [PmShiftTaskController::class, 'getUserPerformance'])->name('pm_shift.table.user');
+
+
+
+
 
 
 
@@ -266,6 +295,8 @@ Route::post('/preventive/v2/target', [PreventiveV2Controller::class, 'store'])->
 Route::get('/preventive/v2/target/{target}/edit', [PreventiveV2Controller::class, 'edit'])->name('preventive-target.edit');
 Route::put('/preventive/v2/target/{target}', [PreventiveV2Controller::class, 'update'])->name('preventive-target.update');
 Route::delete('/preventive/v2/target/{target}', [PreventiveV2Controller::class, 'destroy'])->name('preventive-target.destroy');
+Route::put('/preventive/v2/bulk-update',[PreventiveV2Controller::class, 'bulkUpdate'])->name('preventive-schedule.bulk-update');
+
 
 // Task preventive v2
 Route::get('/preventive/v2/task', [PMFormHeaderController::class, 'index'])->name('pm.index');
@@ -501,15 +532,25 @@ Route::prefix('master/task')->group(function () {
 //     return view('zawa.qr', ['qr' => $qr['qrcode'] ?? null]);
 // });
 
+
 Route::get('/zawa/qr', function () {
     // Langkah 1: Cek apakah sesi Zawa sudah ada di .env
     // Jika sudah, langsung tampilkan pesan sukses dan keluar
-    if (env('ZAWA_ID') && env('ZAWA_SESSION_ID')) {
-        return "Zawa sudah terhubung. Sesi telah tersimpan di file .env.";
-    }
+    // if (env('ZAWA_ID') && env('ZAWA_SESSION_ID')) {
+    //     return "Zawa sudah terhubung. Sesi telah tersimpan di file .env.";
+    // }
 
     // Langkah 2: Jika belum ada, panggil API untuk mendapatkan QR Code
-    $response = Http::post('https://api-zawa.azickri.com/authorize');
+    // $response = Http::post('https://api-zawa.azickri.com/authorize');
+    $response = Http::withOptions([
+    // 'verify' => 'C:\xampp\apache\bin\curl-ca-bundle.crt',
+])->post('https://api-zawa.azickri.com/session');
+
+// dd(
+//     $response->status(),
+//     $response->body()
+// );
+
 
     if ($response->failed()) {
         return "Gagal menginisiasi otorisasi Zawa. Coba lagi.";
@@ -519,6 +560,8 @@ Route::get('/zawa/qr', function () {
     $id = $data['id'];
     $sessionId = $data['sessionId'];
 
+    // dd($id,$sessionId);
+
     // Menunggu beberapa detik agar QR code siap
     sleep(5);
 
@@ -527,8 +570,10 @@ Route::get('/zawa/qr', function () {
         'id' => $id,
         'session-id' => $sessionId,
         'Accept' => '*/*',
-    ])->get('https://api-zawa.azickri.com/qrcode');
+    ])->get('https://api-zawa.azickri.com/session');
 
+
+    // dd($qrResponse);
     if ($qrResponse->failed()) {
         return "Gagal mendapatkan QR Code. Silakan muat ulang halaman.";
     }
@@ -583,7 +628,7 @@ Route::get('/zawa/reconnect-session', [ZawaController::class, 'reconnectSession'
 
 
 // history by alat
-Route::get('/qr',[QRController::class,'index']);
+Route::get('/qr/{id}',[QRController::class,'index']);
 
 // form tour qr by room
 Route::get('/qr/room',[QRController::class,'room']);
